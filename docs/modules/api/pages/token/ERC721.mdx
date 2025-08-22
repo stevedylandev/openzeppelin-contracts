@@ -1,0 +1,1939 @@
+---
+title: "ERC721"
+description: "Smart contract ERC721 utilities and implementations"
+---
+
+= ERC 721
+
+[.readme-notice]
+NOTE: This document is better viewed at https://docs.openzeppelin.com/contracts/api/token/erc721
+
+This set of interfaces, contracts, and utilities are all related to the [ERC721 Non-Fungible Token Standard](https://eips.ethereum.org/EIPS/eip-721).
+
+TIP: For a walk through on how to create an ERC721 token read our xref:ROOT:erc721.adoc[ERC721 guide].
+
+The EIP specifies four interfaces:
+
+* [`IERC721`](#IERC721): Core functionality required in all compliant implementation.
+* [`IERC721Metadata`](#IERC721Metadata): Optional extension that adds name, symbol, and token URI, almost always included.
+* [`IERC721Enumerable`](#IERC721Enumerable): Optional extension that allows enumerating the tokens on chain, often not included since it requires large gas overhead.
+* [`IERC721Receiver`](#IERC721Receiver): An interface that must be implemented by contracts if they want to accept tokens through `safeTransferFrom`.
+
+OpenZeppelin Contracts provides implementations of all four interfaces:
+
+* [`ERC721`](#ERC721): The core and metadata extensions, with a base URI mechanism.
+* [`ERC721Enumerable`](#ERC721Enumerable): The enumerable extension.
+* [`ERC721Holder`](#ERC721Holder): A bare bones implementation of the receiver interface.
+
+Additionally there are a few of other extensions:
+
+* [`ERC721Consecutive`](#ERC721Consecutive): An implementation of [ERC2309](https://eips.ethereum.org/EIPS/eip-2309) for minting batchs of tokens during construction, in accordance with ERC721.
+* [`ERC721URIStorage`](#ERC721URIStorage): A more flexible but more expensive way of storing metadata.
+* [`ERC721Votes`](#ERC721Votes): Support for voting and vote delegation.
+* [`ERC721Royalty`](#ERC721Royalty): A way to signal royalty information following ERC2981.
+* [`ERC721Pausable`](#ERC721Pausable): A primitive to pause contract operation.
+* [`ERC721Burnable`](#ERC721Burnable): A way for token holders to burn their own tokens.
+* [`ERC721Wrapper`](#ERC721Wrapper): Wrapper to create an ERC721 backed by another ERC721, with deposit and withdraw methods. Useful in conjunction with [`ERC721Votes`](#ERC721Votes).
+
+NOTE: This core set of contracts is designed to be unopinionated, allowing developers to access the internal functions in ERC721 (such as <<ERC721-_mint-address-uint256-,`_mint`>>) and expose them as external functions in the way they prefer. On the other hand, xref:ROOT:erc721.adoc#Presets[ERC721 Presets] (such as [`ERC721PresetMinterPauserAutoId`](#ERC721PresetMinterPauserAutoId)) are designed using opinionated patterns to provide developers with ready to use, deployable contracts.
+
+== Core
+
+[`IERC721`](#IERC721)
+
+[`IERC721Metadata`](#IERC721Metadata)
+
+[`IERC721Enumerable`](#IERC721Enumerable)
+
+[`ERC721`](#ERC721)
+
+[`ERC721Enumerable`](#ERC721Enumerable)
+
+[`IERC721Receiver`](#IERC721Receiver)
+
+== Extensions
+
+[`ERC721Pausable`](#ERC721Pausable)
+
+[`ERC721Burnable`](#ERC721Burnable)
+
+[`ERC721Consecutive`](#ERC721Consecutive)
+
+[`ERC721URIStorage`](#ERC721URIStorage)
+
+[`ERC721Votes`](#ERC721Votes)
+
+[`ERC721Royalty`](#ERC721Royalty)
+
+[`ERC721Wrapper`](#ERC721Wrapper)
+
+== Presets
+
+These contracts are preconfigured combinations of the above features. They can be used through inheritance or as models to copy and paste their source code.
+
+[`ERC721PresetMinterPauserAutoId`](#ERC721PresetMinterPauserAutoId)
+
+== Utilities
+
+[`ERC721Holder`](#ERC721Holder)
+
+<a id="ERC721"></a>
+
+## `ERC721` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/ERC721.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+```
+
+Implementation of [ERC721](https://eips.ethereum.org/EIPS/eip-721) Non-Fungible Token Standard, including
+the Metadata extension, but not including the Enumerable extension, which is available separately as
+[`ERC721Enumerable`](#ERC721Enumerable).
+
+### Functions
+- [constructor(name_, symbol_)](#ERC721-constructor-string-string-)
+- [supportsInterface(interfaceId)](#ERC721-supportsInterface-bytes4-)
+- [balanceOf(owner)](#ERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#ERC721-ownerOf-uint256-)
+- [name()](#ERC721-name--)
+- [symbol()](#ERC721-symbol--)
+- [tokenURI(tokenId)](#ERC721-tokenURI-uint256-)
+- [_baseURI()](#ERC721-_baseURI--)
+- [approve(to, tokenId)](#ERC721-approve-address-uint256-)
+- [getApproved(tokenId)](#ERC721-getApproved-uint256-)
+- [setApprovalForAll(operator, approved)](#ERC721-setApprovalForAll-address-bool-)
+- [isApprovedForAll(owner, operator)](#ERC721-isApprovedForAll-address-address-)
+- [transferFrom(from, to, tokenId)](#ERC721-transferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId)](#ERC721-safeTransferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#ERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [_safeTransfer(from, to, tokenId, data)](#ERC721-_safeTransfer-address-address-uint256-bytes-)
+- [_ownerOf(tokenId)](#ERC721-_ownerOf-uint256-)
+- [_exists(tokenId)](#ERC721-_exists-uint256-)
+- [_isApprovedOrOwner(spender, tokenId)](#ERC721-_isApprovedOrOwner-address-uint256-)
+- [_safeMint(to, tokenId)](#ERC721-_safeMint-address-uint256-)
+- [_safeMint(to, tokenId, data)](#ERC721-_safeMint-address-uint256-bytes-)
+- [_mint(to, tokenId)](#ERC721-_mint-address-uint256-)
+- [_burn(tokenId)](#ERC721-_burn-uint256-)
+- [_transfer(from, to, tokenId)](#ERC721-_transfer-address-address-uint256-)
+- [_approve(to, tokenId)](#ERC721-_approve-address-uint256-)
+- [_setApprovalForAll(owner, operator, approved)](#ERC721-_setApprovalForAll-address-address-bool-)
+- [_requireMinted(tokenId)](#ERC721-_requireMinted-uint256-)
+- [_beforeTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_beforeTokenTransfer-address-address-uint256-uint256-)
+- [_afterTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_afterTokenTransfer-address-address-uint256-uint256-)
+- [__unsafe_increaseBalance(account, amount)](#ERC721-__unsafe_increaseBalance-address-uint256-)
+
+#### IERC721Metadata
+
+#### IERC721
+
+#### ERC165
+
+#### IERC165
+
+### Events
+
+#### IERC721Metadata
+
+#### IERC721
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### ERC165
+
+#### IERC165
+
+<a id="ERC721-constructor-string-string-"></a>
+
+### `constructor(string name_, string symbol_)`
+*public*
+
+Initializes the contract by setting a `name` and a `symbol` to the token collection.
+
+<a id="ERC721-supportsInterface-bytes4-"></a>
+
+### `supportsInterface(bytes4 interfaceId) → bool`
+*public*
+
+See [`IERC165.supportsInterface`](../utils#IERC165-supportsInterface-bytes4-).
+
+<a id="ERC721-balanceOf-address-"></a>
+
+### `balanceOf(address owner) → uint256`
+*public*
+
+See [`IERC721.balanceOf`](#IERC721-balanceOf-address-).
+
+<a id="ERC721-ownerOf-uint256-"></a>
+
+### `ownerOf(uint256 tokenId) → address`
+*public*
+
+See [`IERC721.ownerOf`](#IERC721-ownerOf-uint256-).
+
+<a id="ERC721-name--"></a>
+
+### `name() → string`
+*public*
+
+See [`IERC721Metadata.name`](#IERC721Metadata-name--).
+
+<a id="ERC721-symbol--"></a>
+
+### `symbol() → string`
+*public*
+
+See [`IERC721Metadata.symbol`](#IERC721Metadata-symbol--).
+
+<a id="ERC721-tokenURI-uint256-"></a>
+
+### `tokenURI(uint256 tokenId) → string`
+*public*
+
+See [`IERC721Metadata.tokenURI`](#IERC721Metadata-tokenURI-uint256-).
+
+<a id="ERC721-_baseURI--"></a>
+
+### `_baseURI() → string`
+*internal*
+
+Base URI for computing [`ERC721.tokenURI`](#ERC721-tokenURI-uint256-). If set, the resulting URI for each
+token will be the concatenation of the `baseURI` and the `tokenId`. Empty
+by default, can be overridden in child contracts.
+
+<a id="ERC721-approve-address-uint256-"></a>
+
+### `approve(address to, uint256 tokenId)`
+*public*
+
+See [`IERC721.approve`](#IERC721-approve-address-uint256-).
+
+<a id="ERC721-getApproved-uint256-"></a>
+
+### `getApproved(uint256 tokenId) → address`
+*public*
+
+See [`IERC721.getApproved`](#IERC721-getApproved-uint256-).
+
+<a id="ERC721-setApprovalForAll-address-bool-"></a>
+
+### `setApprovalForAll(address operator, bool approved)`
+*public*
+
+See [`IERC721.setApprovalForAll`](#IERC721-setApprovalForAll-address-bool-).
+
+<a id="ERC721-isApprovedForAll-address-address-"></a>
+
+### `isApprovedForAll(address owner, address operator) → bool`
+*public*
+
+See [`IERC721.isApprovedForAll`](#IERC721-isApprovedForAll-address-address-).
+
+<a id="ERC721-transferFrom-address-address-uint256-"></a>
+
+### `transferFrom(address from, address to, uint256 tokenId)`
+*public*
+
+See [`IERC721.transferFrom`](#IERC721-transferFrom-address-address-uint256-).
+
+<a id="ERC721-safeTransferFrom-address-address-uint256-"></a>
+
+### `safeTransferFrom(address from, address to, uint256 tokenId)`
+*public*
+
+See [`IERC721.safeTransferFrom`](#IERC721-safeTransferFrom-address-address-uint256-).
+
+<a id="ERC721-safeTransferFrom-address-address-uint256-bytes-"></a>
+
+### `safeTransferFrom(address from, address to, uint256 tokenId, bytes data)`
+*public*
+
+See [`IERC721.safeTransferFrom`](#IERC721-safeTransferFrom-address-address-uint256-).
+
+<a id="ERC721-_safeTransfer-address-address-uint256-bytes-"></a>
+
+### `_safeTransfer(address from, address to, uint256 tokenId, bytes data)`
+*internal*
+
+Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
+are aware of the ERC721 protocol to prevent tokens from being forever locked.
+
+`data` is additional data, it has no specified format and it is sent in call to `to`.
+
+This internal function is equivalent to [`ERC1155.safeTransferFrom`](ERC1155#ERC1155-safeTransferFrom-address-address-uint256-uint256-bytes-), and can be used to e.g.
+implement alternative mechanisms to perform token transfer, such as signature-based.
+
+Requirements:
+
+- `from` cannot be the zero address.
+- `to` cannot be the zero address.
+- `tokenId` token must exist and be owned by `from`.
+- If `to` refers to a smart contract, it must implement [`IERC721Receiver.onERC721Received`](#IERC721Receiver-onERC721Received-address-address-uint256-bytes-), which is called upon a safe transfer.
+
+Emits a [`IERC20.Transfer`](ERC20#IERC20-Transfer-address-address-uint256-) event.
+
+<a id="ERC721-_ownerOf-uint256-"></a>
+
+### `_ownerOf(uint256 tokenId) → address`
+*internal*
+
+Returns the owner of the `tokenId`. Does NOT revert if token doesn't exist
+
+<a id="ERC721-_exists-uint256-"></a>
+
+### `_exists(uint256 tokenId) → bool`
+*internal*
+
+Returns whether `tokenId` exists.
+
+Tokens can be managed by their owner or approved accounts via [`ERC20.approve`](ERC20#ERC20-approve-address-uint256-) or [`ERC1155.setApprovalForAll`](ERC1155#ERC1155-setApprovalForAll-address-bool-).
+
+Tokens start existing when they are minted (`_mint`),
+and stop existing when they are burned (`_burn`).
+
+<a id="ERC721-_isApprovedOrOwner-address-uint256-"></a>
+
+### `_isApprovedOrOwner(address spender, uint256 tokenId) → bool`
+*internal*
+
+Returns whether `spender` is allowed to manage `tokenId`.
+
+Requirements:
+
+- `tokenId` must exist.
+
+<a id="ERC721-_safeMint-address-uint256-"></a>
+
+### `_safeMint(address to, uint256 tokenId)`
+*internal*
+
+Safely mints `tokenId` and transfers it to `to`.
+
+Requirements:
+
+- `tokenId` must not exist.
+- If `to` refers to a smart contract, it must implement [`IERC721Receiver.onERC721Received`](#IERC721Receiver-onERC721Received-address-address-uint256-bytes-), which is called upon a safe transfer.
+
+Emits a [`IERC20.Transfer`](ERC20#IERC20-Transfer-address-address-uint256-) event.
+
+<a id="ERC721-_safeMint-address-uint256-bytes-"></a>
+
+### `_safeMint(address to, uint256 tokenId, bytes data)`
+*internal*
+
+Same as [`_safeMint`](#ERC721-_safeMint-address-uint256-), with an additional `data` parameter which is
+forwarded in [`IERC721Receiver.onERC721Received`](#IERC721Receiver-onERC721Received-address-address-uint256-bytes-) to contract recipients.
+
+<a id="ERC721-_mint-address-uint256-"></a>
+
+### `_mint(address to, uint256 tokenId)`
+*internal*
+
+Mints `tokenId` and transfers it to `to`.
+
+WARNING: Usage of this method is discouraged, use [`ERC721._safeMint`](#ERC721-_safeMint-address-uint256-bytes-) whenever possible
+
+Requirements:
+
+- `tokenId` must not exist.
+- `to` cannot be the zero address.
+
+Emits a [`IERC20.Transfer`](ERC20#IERC20-Transfer-address-address-uint256-) event.
+
+<a id="ERC721-_burn-uint256-"></a>
+
+### `_burn(uint256 tokenId)`
+*internal*
+
+Destroys `tokenId`.
+The approval is cleared when the token is burned.
+This is an internal function that does not check if the sender is authorized to operate on the token.
+
+Requirements:
+
+- `tokenId` must exist.
+
+Emits a [`IERC20.Transfer`](ERC20#IERC20-Transfer-address-address-uint256-) event.
+
+<a id="ERC721-_transfer-address-address-uint256-"></a>
+
+### `_transfer(address from, address to, uint256 tokenId)`
+*internal*
+
+Transfers `tokenId` from `from` to `to`.
+ As opposed to [`ERC20.transferFrom`](ERC20#ERC20-transferFrom-address-address-uint256-), this imposes no restrictions on msg.sender.
+
+Requirements:
+
+- `to` cannot be the zero address.
+- `tokenId` token must be owned by `from`.
+
+Emits a [`IERC20.Transfer`](ERC20#IERC20-Transfer-address-address-uint256-) event.
+
+<a id="ERC721-_approve-address-uint256-"></a>
+
+### `_approve(address to, uint256 tokenId)`
+*internal*
+
+Approve `to` to operate on `tokenId`
+
+Emits an [`IERC20.Approval`](ERC20#IERC20-Approval-address-address-uint256-) event.
+
+<a id="ERC721-_setApprovalForAll-address-address-bool-"></a>
+
+### `_setApprovalForAll(address owner, address operator, bool approved)`
+*internal*
+
+Approve `operator` to operate on all of `owner` tokens
+
+Emits an [`IERC1155.ApprovalForAll`](ERC1155#IERC1155-ApprovalForAll-address-address-bool-) event.
+
+<a id="ERC721-_requireMinted-uint256-"></a>
+
+### `_requireMinted(uint256 tokenId)`
+*internal*
+
+Reverts if the `tokenId` has not been minted yet.
+
+<a id="ERC721-_beforeTokenTransfer-address-address-uint256-uint256-"></a>
+
+### `_beforeTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize)`
+*internal*
+
+Hook that is called before any token transfer. This includes minting and burning. If [`ERC721Consecutive`](#ERC721Consecutive) is
+used, the hook may be called as part of a consecutive (batch) mint, as indicated by `batchSize` greater than 1.
+
+Calling conditions:
+
+- When `from` and `to` are both non-zero, ``from``'s tokens will be transferred to `to`.
+- When `from` is zero, the tokens will be minted for `to`.
+- When `to` is zero, ``from``'s tokens will be burned.
+- `from` and `to` are never both zero.
+- `batchSize` is non-zero.
+
+To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+
+<a id="ERC721-_afterTokenTransfer-address-address-uint256-uint256-"></a>
+
+### `_afterTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize)`
+*internal*
+
+Hook that is called after any token transfer. This includes minting and burning. If [`ERC721Consecutive`](#ERC721Consecutive) is
+used, the hook may be called as part of a consecutive (batch) mint, as indicated by `batchSize` greater than 1.
+
+Calling conditions:
+
+- When `from` and `to` are both non-zero, ``from``'s tokens were transferred to `to`.
+- When `from` is zero, the tokens were minted for `to`.
+- When `to` is zero, ``from``'s tokens were burned.
+- `from` and `to` are never both zero.
+- `batchSize` is non-zero.
+
+To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+
+<a id="ERC721-__unsafe_increaseBalance-address-uint256-"></a>
+
+### `__unsafe_increaseBalance(address account, uint256 amount)`
+*internal*
+
+Unsafe write access to the balances, used by extensions that "mint" tokens using an [`ERC721.ownerOf`](#ERC721-ownerOf-uint256-) override.
+
+WARNING: Anyone calling this MUST ensure that the balances remain consistent with the ownership. The invariant
+being that for any address `a` the value returned by `balanceOf(a)` must be equal to the number of tokens such
+that `ownerOf(tokenId)` is `a`.
+
+<a id="IERC721"></a>
+
+## `IERC721` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/IERC721.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+```
+
+Required interface of an ERC721 compliant contract.
+
+### Functions
+- [balanceOf(owner)](#IERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#IERC721-ownerOf-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#IERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [safeTransferFrom(from, to, tokenId)](#IERC721-safeTransferFrom-address-address-uint256-)
+- [transferFrom(from, to, tokenId)](#IERC721-transferFrom-address-address-uint256-)
+- [approve(to, tokenId)](#IERC721-approve-address-uint256-)
+- [setApprovalForAll(operator, approved)](#IERC721-setApprovalForAll-address-bool-)
+- [getApproved(tokenId)](#IERC721-getApproved-uint256-)
+- [isApprovedForAll(owner, operator)](#IERC721-isApprovedForAll-address-address-)
+
+#### IERC165
+- [supportsInterface(interfaceId)](#IERC165-supportsInterface-bytes4-)
+
+### Events
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### IERC165
+
+<a id="IERC721-balanceOf-address-"></a>
+
+### `balanceOf(address owner) → uint256 balance`
+*external*
+
+Returns the number of tokens in ``owner``'s account.
+
+<a id="IERC721-ownerOf-uint256-"></a>
+
+### `ownerOf(uint256 tokenId) → address owner`
+*external*
+
+Returns the owner of the `tokenId` token.
+
+Requirements:
+
+- `tokenId` must exist.
+
+<a id="IERC721-safeTransferFrom-address-address-uint256-bytes-"></a>
+
+### `safeTransferFrom(address from, address to, uint256 tokenId, bytes data)`
+*external*
+
+Safely transfers `tokenId` token from `from` to `to`.
+
+Requirements:
+
+- `from` cannot be the zero address.
+- `to` cannot be the zero address.
+- `tokenId` token must exist and be owned by `from`.
+- If the caller is not `from`, it must be approved to move this token by either [`ERC20.approve`](ERC20#ERC20-approve-address-uint256-) or [`ERC1155.setApprovalForAll`](ERC1155#ERC1155-setApprovalForAll-address-bool-).
+- If `to` refers to a smart contract, it must implement [`IERC721Receiver.onERC721Received`](#IERC721Receiver-onERC721Received-address-address-uint256-bytes-), which is called upon a safe transfer.
+
+Emits a [`IERC20.Transfer`](ERC20#IERC20-Transfer-address-address-uint256-) event.
+
+<a id="IERC721-safeTransferFrom-address-address-uint256-"></a>
+
+### `safeTransferFrom(address from, address to, uint256 tokenId)`
+*external*
+
+Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
+are aware of the ERC721 protocol to prevent tokens from being forever locked.
+
+Requirements:
+
+- `from` cannot be the zero address.
+- `to` cannot be the zero address.
+- `tokenId` token must exist and be owned by `from`.
+- If the caller is not `from`, it must have been allowed to move this token by either [`ERC20.approve`](ERC20#ERC20-approve-address-uint256-) or [`ERC1155.setApprovalForAll`](ERC1155#ERC1155-setApprovalForAll-address-bool-).
+- If `to` refers to a smart contract, it must implement [`IERC721Receiver.onERC721Received`](#IERC721Receiver-onERC721Received-address-address-uint256-bytes-), which is called upon a safe transfer.
+
+Emits a [`IERC20.Transfer`](ERC20#IERC20-Transfer-address-address-uint256-) event.
+
+<a id="IERC721-transferFrom-address-address-uint256-"></a>
+
+### `transferFrom(address from, address to, uint256 tokenId)`
+*external*
+
+Transfers `tokenId` token from `from` to `to`.
+
+WARNING: Note that the caller is responsible to confirm that the recipient is capable of receiving ERC721
+or else they may be permanently lost. Usage of [`ERC1155.safeTransferFrom`](ERC1155#ERC1155-safeTransferFrom-address-address-uint256-uint256-bytes-) prevents loss, though the caller must
+understand this adds an external call which potentially creates a reentrancy vulnerability.
+
+Requirements:
+
+- `from` cannot be the zero address.
+- `to` cannot be the zero address.
+- `tokenId` token must be owned by `from`.
+- If the caller is not `from`, it must be approved to move this token by either [`ERC20.approve`](ERC20#ERC20-approve-address-uint256-) or [`ERC1155.setApprovalForAll`](ERC1155#ERC1155-setApprovalForAll-address-bool-).
+
+Emits a [`IERC20.Transfer`](ERC20#IERC20-Transfer-address-address-uint256-) event.
+
+<a id="IERC721-approve-address-uint256-"></a>
+
+### `approve(address to, uint256 tokenId)`
+*external*
+
+Gives permission to `to` to transfer `tokenId` token to another account.
+The approval is cleared when the token is transferred.
+
+Only a single account can be approved at a time, so approving the zero address clears previous approvals.
+
+Requirements:
+
+- The caller must own the token or be an approved operator.
+- `tokenId` must exist.
+
+Emits an [`IERC20.Approval`](ERC20#IERC20-Approval-address-address-uint256-) event.
+
+<a id="IERC721-setApprovalForAll-address-bool-"></a>
+
+### `setApprovalForAll(address operator, bool approved)`
+*external*
+
+Approve or remove `operator` as an operator for the caller.
+Operators can call [`ERC20.transferFrom`](ERC20#ERC20-transferFrom-address-address-uint256-) or [`ERC1155.safeTransferFrom`](ERC1155#ERC1155-safeTransferFrom-address-address-uint256-uint256-bytes-) for any token owned by the caller.
+
+Requirements:
+
+- The `operator` cannot be the caller.
+
+Emits an [`IERC1155.ApprovalForAll`](ERC1155#IERC1155-ApprovalForAll-address-address-bool-) event.
+
+<a id="IERC721-getApproved-uint256-"></a>
+
+### `getApproved(uint256 tokenId) → address operator`
+*external*
+
+Returns the account approved for `tokenId` token.
+
+Requirements:
+
+- `tokenId` must exist.
+
+<a id="IERC721-isApprovedForAll-address-address-"></a>
+
+### `isApprovedForAll(address owner, address operator) → bool`
+*external*
+
+Returns if the `operator` is allowed to manage all of the assets of `owner`.
+
+See [`ERC1155.setApprovalForAll`](ERC1155#ERC1155-setApprovalForAll-address-bool-)
+
+<a id="IERC721-Transfer-address-address-uint256-"></a>
+
+### `Transfer(address indexed from, address indexed to, uint256 indexed tokenId)`
+*event*
+
+Emitted when `tokenId` token is transferred from `from` to `to`.
+
+<a id="IERC721-Approval-address-address-uint256-"></a>
+
+### `Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)`
+*event*
+
+Emitted when `owner` enables `approved` to manage the `tokenId` token.
+
+<a id="IERC721-ApprovalForAll-address-address-bool-"></a>
+
+### `ApprovalForAll(address indexed owner, address indexed operator, bool approved)`
+*event*
+
+Emitted when `owner` enables or disables (`approved`) `operator` to manage all of its assets.
+
+<a id="IERC721Receiver"></a>
+
+## `IERC721Receiver` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/IERC721Receiver.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+```
+
+Interface for any contract that wants to support safeTransfers
+from ERC721 asset contracts.
+
+### Functions
+- [onERC721Received(operator, from, tokenId, data)](#IERC721Receiver-onERC721Received-address-address-uint256-bytes-)
+
+<a id="IERC721Receiver-onERC721Received-address-address-uint256-bytes-"></a>
+
+### `onERC721Received(address operator, address from, uint256 tokenId, bytes data) → bytes4`
+*external*
+
+Whenever an [`IERC721`](#IERC721) `tokenId` token is transferred to this contract via [`IERC721.safeTransferFrom`](#IERC721-safeTransferFrom-address-address-uint256-)
+by `operator` from `from`, this function is called.
+
+It must return its Solidity selector to confirm the token transfer.
+If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted.
+
+The selector can be obtained in Solidity with `IERC721Receiver.onERC721Received.selector`.
+
+<a id="ERC721Burnable"></a>
+
+## `ERC721Burnable` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/extensions/ERC721Burnable.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+```
+
+ERC721 Token that can be burned (destroyed).
+
+### Functions
+- [burn(tokenId)](#ERC721Burnable-burn-uint256-)
+
+#### ERC721
+- [supportsInterface(interfaceId)](#ERC721-supportsInterface-bytes4-)
+- [balanceOf(owner)](#ERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#ERC721-ownerOf-uint256-)
+- [name()](#ERC721-name--)
+- [symbol()](#ERC721-symbol--)
+- [tokenURI(tokenId)](#ERC721-tokenURI-uint256-)
+- [_baseURI()](#ERC721-_baseURI--)
+- [approve(to, tokenId)](#ERC721-approve-address-uint256-)
+- [getApproved(tokenId)](#ERC721-getApproved-uint256-)
+- [setApprovalForAll(operator, approved)](#ERC721-setApprovalForAll-address-bool-)
+- [isApprovedForAll(owner, operator)](#ERC721-isApprovedForAll-address-address-)
+- [transferFrom(from, to, tokenId)](#ERC721-transferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId)](#ERC721-safeTransferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#ERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [_safeTransfer(from, to, tokenId, data)](#ERC721-_safeTransfer-address-address-uint256-bytes-)
+- [_ownerOf(tokenId)](#ERC721-_ownerOf-uint256-)
+- [_exists(tokenId)](#ERC721-_exists-uint256-)
+- [_isApprovedOrOwner(spender, tokenId)](#ERC721-_isApprovedOrOwner-address-uint256-)
+- [_safeMint(to, tokenId)](#ERC721-_safeMint-address-uint256-)
+- [_safeMint(to, tokenId, data)](#ERC721-_safeMint-address-uint256-bytes-)
+- [_mint(to, tokenId)](#ERC721-_mint-address-uint256-)
+- [_burn(tokenId)](#ERC721-_burn-uint256-)
+- [_transfer(from, to, tokenId)](#ERC721-_transfer-address-address-uint256-)
+- [_approve(to, tokenId)](#ERC721-_approve-address-uint256-)
+- [_setApprovalForAll(owner, operator, approved)](#ERC721-_setApprovalForAll-address-address-bool-)
+- [_requireMinted(tokenId)](#ERC721-_requireMinted-uint256-)
+- [_beforeTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_beforeTokenTransfer-address-address-uint256-uint256-)
+- [_afterTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_afterTokenTransfer-address-address-uint256-uint256-)
+- [__unsafe_increaseBalance(account, amount)](#ERC721-__unsafe_increaseBalance-address-uint256-)
+
+#### IERC721Metadata
+
+#### IERC721
+
+#### ERC165
+
+#### IERC165
+
+### Events
+
+#### ERC721
+
+#### IERC721Metadata
+
+#### IERC721
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### ERC165
+
+#### IERC165
+
+<a id="ERC721Burnable-burn-uint256-"></a>
+
+### `burn(uint256 tokenId)`
+*public*
+
+Burns `tokenId`. See [`ERC721._burn`](#ERC721-_burn-uint256-).
+
+Requirements:
+
+- The caller must own `tokenId` or be an approved operator.
+
+<a id="ERC721Consecutive"></a>
+
+## `ERC721Consecutive` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/extensions/ERC721Consecutive.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Consecutive.sol";
+```
+
+Implementation of the ERC2309 "Consecutive Transfer Extension" as defined in
+[EIP-2309](https://eips.ethereum.org/EIPS/eip-2309).
+
+This extension allows the minting of large batches of tokens, during contract construction only. For upgradeable
+contracts this implies that batch minting is only available during proxy deployment, and not in subsequent upgrades.
+These batches are limited to 5000 tokens at a time by default to accommodate off-chain indexers.
+
+Using this extension removes the ability to mint single tokens during contract construction. This ability is
+regained after construction. During construction, only batch minting is allowed.
+
+IMPORTANT: This extension bypasses the hooks [`ERC1155._beforeTokenTransfer`](ERC1155#ERC1155-_beforeTokenTransfer-address-address-address-uint256---uint256---bytes-) and [`ERC1155._afterTokenTransfer`](ERC1155#ERC1155-_afterTokenTransfer-address-address-address-uint256---uint256---bytes-) for tokens minted in
+batch. When using this extension, you should consider the {_beforeConsecutiveTokenTransfer} and
+{_afterConsecutiveTokenTransfer} hooks in addition to [`ERC1155._beforeTokenTransfer`](ERC1155#ERC1155-_beforeTokenTransfer-address-address-address-uint256---uint256---bytes-) and [`ERC1155._afterTokenTransfer`](ERC1155#ERC1155-_afterTokenTransfer-address-address-address-uint256---uint256---bytes-).
+
+IMPORTANT: When overriding [`ERC1155._afterTokenTransfer`](ERC1155#ERC1155-_afterTokenTransfer-address-address-address-uint256---uint256---bytes-), be careful about call ordering. [`ERC721.ownerOf`](#ERC721-ownerOf-uint256-) may return invalid
+values during the [`ERC1155._afterTokenTransfer`](ERC1155#ERC1155-_afterTokenTransfer-address-address-address-uint256---uint256---bytes-) execution if the super call is not called first. To be safe, execute the
+super call before your custom logic.
+
+_Available since v4.8._
+
+### Functions
+- [_maxBatchSize()](#ERC721Consecutive-_maxBatchSize--)
+- [_ownerOf(tokenId)](#ERC721Consecutive-_ownerOf-uint256-)
+- [_mintConsecutive(to, batchSize)](#ERC721Consecutive-_mintConsecutive-address-uint96-)
+- [_mint(to, tokenId)](#ERC721Consecutive-_mint-address-uint256-)
+- [_afterTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721Consecutive-_afterTokenTransfer-address-address-uint256-uint256-)
+
+#### ERC721
+- [supportsInterface(interfaceId)](#ERC721-supportsInterface-bytes4-)
+- [balanceOf(owner)](#ERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#ERC721-ownerOf-uint256-)
+- [name()](#ERC721-name--)
+- [symbol()](#ERC721-symbol--)
+- [tokenURI(tokenId)](#ERC721-tokenURI-uint256-)
+- [_baseURI()](#ERC721-_baseURI--)
+- [approve(to, tokenId)](#ERC721-approve-address-uint256-)
+- [getApproved(tokenId)](#ERC721-getApproved-uint256-)
+- [setApprovalForAll(operator, approved)](#ERC721-setApprovalForAll-address-bool-)
+- [isApprovedForAll(owner, operator)](#ERC721-isApprovedForAll-address-address-)
+- [transferFrom(from, to, tokenId)](#ERC721-transferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId)](#ERC721-safeTransferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#ERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [_safeTransfer(from, to, tokenId, data)](#ERC721-_safeTransfer-address-address-uint256-bytes-)
+- [_exists(tokenId)](#ERC721-_exists-uint256-)
+- [_isApprovedOrOwner(spender, tokenId)](#ERC721-_isApprovedOrOwner-address-uint256-)
+- [_safeMint(to, tokenId)](#ERC721-_safeMint-address-uint256-)
+- [_safeMint(to, tokenId, data)](#ERC721-_safeMint-address-uint256-bytes-)
+- [_burn(tokenId)](#ERC721-_burn-uint256-)
+- [_transfer(from, to, tokenId)](#ERC721-_transfer-address-address-uint256-)
+- [_approve(to, tokenId)](#ERC721-_approve-address-uint256-)
+- [_setApprovalForAll(owner, operator, approved)](#ERC721-_setApprovalForAll-address-address-bool-)
+- [_requireMinted(tokenId)](#ERC721-_requireMinted-uint256-)
+- [_beforeTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_beforeTokenTransfer-address-address-uint256-uint256-)
+- [__unsafe_increaseBalance(account, amount)](#ERC721-__unsafe_increaseBalance-address-uint256-)
+
+#### IERC721Metadata
+
+#### IERC721
+
+#### ERC165
+
+#### IERC165
+
+#### IERC2309
+
+### Events
+
+#### ERC721
+
+#### IERC721Metadata
+
+#### IERC721
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### ERC165
+
+#### IERC165
+
+#### IERC2309
+- [ConsecutiveTransfer(fromTokenId, toTokenId, fromAddress, toAddress)](#IERC2309-ConsecutiveTransfer-uint256-uint256-address-address-)
+
+<a id="ERC721Consecutive-_maxBatchSize--"></a>
+
+### `_maxBatchSize() → uint96`
+*internal*
+
+Maximum size of a batch of consecutive tokens. This is designed to limit stress on off-chain indexing
+services that have to record one entry per token, and have protections against "unreasonably large" batches of
+tokens.
+
+NOTE: Overriding the default value of 5000 will not cause on-chain issues, but may result in the asset not being
+correctly supported by off-chain indexing services (including marketplaces).
+
+<a id="ERC721Consecutive-_ownerOf-uint256-"></a>
+
+### `_ownerOf(uint256 tokenId) → address`
+*internal*
+
+See [`ERC721._ownerOf`](#ERC721-_ownerOf-uint256-). Override that checks the sequential ownership structure for tokens that have
+been minted as part of a batch, and not yet transferred.
+
+<a id="ERC721Consecutive-_mintConsecutive-address-uint96-"></a>
+
+### `_mintConsecutive(address to, uint96 batchSize) → uint96`
+*internal*
+
+Mint a batch of tokens of length `batchSize` for `to`. Returns the token id of the first token minted in the
+batch; if `batchSize` is 0, returns the number of consecutive ids minted so far.
+
+Requirements:
+
+- `batchSize` must not be greater than [`ERC721Consecutive._maxBatchSize`](#ERC721Consecutive-_maxBatchSize--).
+- The function is called in the constructor of the contract (directly or indirectly).
+
+CAUTION: Does not emit a `Transfer` event. This is ERC721 compliant as long as it is done inside of the
+constructor, which is enforced by this function.
+
+CAUTION: Does not invoke `onERC721Received` on the receiver.
+
+Emits a [`IERC2309.ConsecutiveTransfer`](../interfaces#IERC2309-ConsecutiveTransfer-uint256-uint256-address-address-) event.
+
+<a id="ERC721Consecutive-_mint-address-uint256-"></a>
+
+### `_mint(address to, uint256 tokenId)`
+*internal*
+
+See [`ERC721._mint`](#ERC721-_mint-address-uint256-). Override version that restricts normal minting to after construction.
+
+Warning: Using [`ERC721Consecutive`](#ERC721Consecutive) prevents using [`ERC1155._mint`](ERC1155#ERC1155-_mint-address-uint256-uint256-bytes-) during construction in favor of [`ERC721Consecutive._mintConsecutive`](#ERC721Consecutive-_mintConsecutive-address-uint96-).
+After construction, [`ERC721Consecutive._mintConsecutive`](#ERC721Consecutive-_mintConsecutive-address-uint96-) is no longer available and [`ERC1155._mint`](ERC1155#ERC1155-_mint-address-uint256-uint256-bytes-) becomes available.
+
+<a id="ERC721Consecutive-_afterTokenTransfer-address-address-uint256-uint256-"></a>
+
+### `_afterTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize)`
+*internal*
+
+See [`ERC721._afterTokenTransfer`](#ERC721-_afterTokenTransfer-address-address-uint256-uint256-). Burning of tokens that have been sequentially minted must be explicit.
+
+<a id="ERC721Enumerable"></a>
+
+## `ERC721Enumerable` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/extensions/ERC721Enumerable.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+```
+
+This implements an optional extension of [`ERC721`](#ERC721) defined in the EIP that adds
+enumerability of all the token ids in the contract as well as all token ids owned by each
+account.
+
+### Functions
+- [supportsInterface(interfaceId)](#ERC721Enumerable-supportsInterface-bytes4-)
+- [tokenOfOwnerByIndex(owner, index)](#ERC721Enumerable-tokenOfOwnerByIndex-address-uint256-)
+- [totalSupply()](#ERC721Enumerable-totalSupply--)
+- [tokenByIndex(index)](#ERC721Enumerable-tokenByIndex-uint256-)
+- [_beforeTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721Enumerable-_beforeTokenTransfer-address-address-uint256-uint256-)
+
+#### IERC721Enumerable
+
+#### ERC721
+- [balanceOf(owner)](#ERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#ERC721-ownerOf-uint256-)
+- [name()](#ERC721-name--)
+- [symbol()](#ERC721-symbol--)
+- [tokenURI(tokenId)](#ERC721-tokenURI-uint256-)
+- [_baseURI()](#ERC721-_baseURI--)
+- [approve(to, tokenId)](#ERC721-approve-address-uint256-)
+- [getApproved(tokenId)](#ERC721-getApproved-uint256-)
+- [setApprovalForAll(operator, approved)](#ERC721-setApprovalForAll-address-bool-)
+- [isApprovedForAll(owner, operator)](#ERC721-isApprovedForAll-address-address-)
+- [transferFrom(from, to, tokenId)](#ERC721-transferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId)](#ERC721-safeTransferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#ERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [_safeTransfer(from, to, tokenId, data)](#ERC721-_safeTransfer-address-address-uint256-bytes-)
+- [_ownerOf(tokenId)](#ERC721-_ownerOf-uint256-)
+- [_exists(tokenId)](#ERC721-_exists-uint256-)
+- [_isApprovedOrOwner(spender, tokenId)](#ERC721-_isApprovedOrOwner-address-uint256-)
+- [_safeMint(to, tokenId)](#ERC721-_safeMint-address-uint256-)
+- [_safeMint(to, tokenId, data)](#ERC721-_safeMint-address-uint256-bytes-)
+- [_mint(to, tokenId)](#ERC721-_mint-address-uint256-)
+- [_burn(tokenId)](#ERC721-_burn-uint256-)
+- [_transfer(from, to, tokenId)](#ERC721-_transfer-address-address-uint256-)
+- [_approve(to, tokenId)](#ERC721-_approve-address-uint256-)
+- [_setApprovalForAll(owner, operator, approved)](#ERC721-_setApprovalForAll-address-address-bool-)
+- [_requireMinted(tokenId)](#ERC721-_requireMinted-uint256-)
+- [_afterTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_afterTokenTransfer-address-address-uint256-uint256-)
+- [__unsafe_increaseBalance(account, amount)](#ERC721-__unsafe_increaseBalance-address-uint256-)
+
+#### IERC721Metadata
+
+#### IERC721
+
+#### ERC165
+
+#### IERC165
+
+### Events
+
+#### IERC721Enumerable
+
+#### ERC721
+
+#### IERC721Metadata
+
+#### IERC721
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### ERC165
+
+#### IERC165
+
+<a id="ERC721Enumerable-supportsInterface-bytes4-"></a>
+
+### `supportsInterface(bytes4 interfaceId) → bool`
+*public*
+
+See [`IERC165.supportsInterface`](../utils#IERC165-supportsInterface-bytes4-).
+
+<a id="ERC721Enumerable-tokenOfOwnerByIndex-address-uint256-"></a>
+
+### `tokenOfOwnerByIndex(address owner, uint256 index) → uint256`
+*public*
+
+See [`IERC721Enumerable.tokenOfOwnerByIndex`](#IERC721Enumerable-tokenOfOwnerByIndex-address-uint256-).
+
+<a id="ERC721Enumerable-totalSupply--"></a>
+
+### `totalSupply() → uint256`
+*public*
+
+See [`IERC721Enumerable.totalSupply`](#IERC721Enumerable-totalSupply--).
+
+<a id="ERC721Enumerable-tokenByIndex-uint256-"></a>
+
+### `tokenByIndex(uint256 index) → uint256`
+*public*
+
+See [`IERC721Enumerable.tokenByIndex`](#IERC721Enumerable-tokenByIndex-uint256-).
+
+<a id="ERC721Enumerable-_beforeTokenTransfer-address-address-uint256-uint256-"></a>
+
+### `_beforeTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize)`
+*internal*
+
+See [`ERC721._beforeTokenTransfer`](#ERC721-_beforeTokenTransfer-address-address-uint256-uint256-).
+
+<a id="ERC721Pausable"></a>
+
+## `ERC721Pausable` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/extensions/ERC721Pausable.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
+```
+
+ERC721 token with pausable token transfers, minting and burning.
+
+Useful for scenarios such as preventing trades until the end of an evaluation
+period, or having an emergency switch for freezing all token transfers in the
+event of a large bug.
+
+IMPORTANT: This contract does not include public pause and unpause functions. In
+addition to inheriting this contract, you must define both functions, invoking the
+[`Pausable._pause`](../security#Pausable-_pause--) and [`Pausable._unpause`](../security#Pausable-_unpause--) internal functions, with appropriate
+access control, e.g. using [`AccessControl`](../access#AccessControl) or [`Ownable`](../access#Ownable). Not doing so will
+make the contract unpausable.
+
+### Functions
+- [_beforeTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721Pausable-_beforeTokenTransfer-address-address-uint256-uint256-)
+
+#### Pausable
+- [paused()](#Pausable-paused--)
+- [_requireNotPaused()](#Pausable-_requireNotPaused--)
+- [_requirePaused()](#Pausable-_requirePaused--)
+- [_pause()](#Pausable-_pause--)
+- [_unpause()](#Pausable-_unpause--)
+
+#### ERC721
+- [supportsInterface(interfaceId)](#ERC721-supportsInterface-bytes4-)
+- [balanceOf(owner)](#ERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#ERC721-ownerOf-uint256-)
+- [name()](#ERC721-name--)
+- [symbol()](#ERC721-symbol--)
+- [tokenURI(tokenId)](#ERC721-tokenURI-uint256-)
+- [_baseURI()](#ERC721-_baseURI--)
+- [approve(to, tokenId)](#ERC721-approve-address-uint256-)
+- [getApproved(tokenId)](#ERC721-getApproved-uint256-)
+- [setApprovalForAll(operator, approved)](#ERC721-setApprovalForAll-address-bool-)
+- [isApprovedForAll(owner, operator)](#ERC721-isApprovedForAll-address-address-)
+- [transferFrom(from, to, tokenId)](#ERC721-transferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId)](#ERC721-safeTransferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#ERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [_safeTransfer(from, to, tokenId, data)](#ERC721-_safeTransfer-address-address-uint256-bytes-)
+- [_ownerOf(tokenId)](#ERC721-_ownerOf-uint256-)
+- [_exists(tokenId)](#ERC721-_exists-uint256-)
+- [_isApprovedOrOwner(spender, tokenId)](#ERC721-_isApprovedOrOwner-address-uint256-)
+- [_safeMint(to, tokenId)](#ERC721-_safeMint-address-uint256-)
+- [_safeMint(to, tokenId, data)](#ERC721-_safeMint-address-uint256-bytes-)
+- [_mint(to, tokenId)](#ERC721-_mint-address-uint256-)
+- [_burn(tokenId)](#ERC721-_burn-uint256-)
+- [_transfer(from, to, tokenId)](#ERC721-_transfer-address-address-uint256-)
+- [_approve(to, tokenId)](#ERC721-_approve-address-uint256-)
+- [_setApprovalForAll(owner, operator, approved)](#ERC721-_setApprovalForAll-address-address-bool-)
+- [_requireMinted(tokenId)](#ERC721-_requireMinted-uint256-)
+- [_afterTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_afterTokenTransfer-address-address-uint256-uint256-)
+- [__unsafe_increaseBalance(account, amount)](#ERC721-__unsafe_increaseBalance-address-uint256-)
+
+#### IERC721Metadata
+
+#### IERC721
+
+#### ERC165
+
+#### IERC165
+
+### Events
+
+#### Pausable
+- [Paused(account)](#Pausable-Paused-address-)
+- [Unpaused(account)](#Pausable-Unpaused-address-)
+
+#### ERC721
+
+#### IERC721Metadata
+
+#### IERC721
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### ERC165
+
+#### IERC165
+
+<a id="ERC721Pausable-_beforeTokenTransfer-address-address-uint256-uint256-"></a>
+
+### `_beforeTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize)`
+*internal*
+
+See [`ERC721._beforeTokenTransfer`](#ERC721-_beforeTokenTransfer-address-address-uint256-uint256-).
+
+Requirements:
+
+- the contract must not be paused.
+
+<a id="ERC721Royalty"></a>
+
+## `ERC721Royalty` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/extensions/ERC721Royalty.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
+```
+
+Extension of ERC721 with the ERC2981 NFT Royalty Standard, a standardized way to retrieve royalty payment
+information.
+
+Royalty information can be specified globally for all token ids via [`ERC2981._setDefaultRoyalty`](common#ERC2981-_setDefaultRoyalty-address-uint96-), and/or individually for
+specific token ids via [`ERC2981._setTokenRoyalty`](common#ERC2981-_setTokenRoyalty-uint256-address-uint96-). The latter takes precedence over the first.
+
+IMPORTANT: ERC-2981 only specifies a way to signal royalty information and does not enforce its payment. See
+[Rationale](https://eips.ethereum.org/EIPS/eip-2981#optional-royalty-payments) in the EIP. Marketplaces are expected to
+voluntarily pay royalties together with sales, but note that this standard is not yet widely supported.
+
+_Available since v4.5._
+
+### Functions
+- [supportsInterface(interfaceId)](#ERC721Royalty-supportsInterface-bytes4-)
+- [_burn(tokenId)](#ERC721Royalty-_burn-uint256-)
+
+#### ERC721
+- [balanceOf(owner)](#ERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#ERC721-ownerOf-uint256-)
+- [name()](#ERC721-name--)
+- [symbol()](#ERC721-symbol--)
+- [tokenURI(tokenId)](#ERC721-tokenURI-uint256-)
+- [_baseURI()](#ERC721-_baseURI--)
+- [approve(to, tokenId)](#ERC721-approve-address-uint256-)
+- [getApproved(tokenId)](#ERC721-getApproved-uint256-)
+- [setApprovalForAll(operator, approved)](#ERC721-setApprovalForAll-address-bool-)
+- [isApprovedForAll(owner, operator)](#ERC721-isApprovedForAll-address-address-)
+- [transferFrom(from, to, tokenId)](#ERC721-transferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId)](#ERC721-safeTransferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#ERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [_safeTransfer(from, to, tokenId, data)](#ERC721-_safeTransfer-address-address-uint256-bytes-)
+- [_ownerOf(tokenId)](#ERC721-_ownerOf-uint256-)
+- [_exists(tokenId)](#ERC721-_exists-uint256-)
+- [_isApprovedOrOwner(spender, tokenId)](#ERC721-_isApprovedOrOwner-address-uint256-)
+- [_safeMint(to, tokenId)](#ERC721-_safeMint-address-uint256-)
+- [_safeMint(to, tokenId, data)](#ERC721-_safeMint-address-uint256-bytes-)
+- [_mint(to, tokenId)](#ERC721-_mint-address-uint256-)
+- [_transfer(from, to, tokenId)](#ERC721-_transfer-address-address-uint256-)
+- [_approve(to, tokenId)](#ERC721-_approve-address-uint256-)
+- [_setApprovalForAll(owner, operator, approved)](#ERC721-_setApprovalForAll-address-address-bool-)
+- [_requireMinted(tokenId)](#ERC721-_requireMinted-uint256-)
+- [_beforeTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_beforeTokenTransfer-address-address-uint256-uint256-)
+- [_afterTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_afterTokenTransfer-address-address-uint256-uint256-)
+- [__unsafe_increaseBalance(account, amount)](#ERC721-__unsafe_increaseBalance-address-uint256-)
+
+#### IERC721Metadata
+
+#### IERC721
+
+#### ERC2981
+- [royaltyInfo(tokenId, salePrice)](#ERC2981-royaltyInfo-uint256-uint256-)
+- [_feeDenominator()](#ERC2981-_feeDenominator--)
+- [_setDefaultRoyalty(receiver, feeNumerator)](#ERC2981-_setDefaultRoyalty-address-uint96-)
+- [_deleteDefaultRoyalty()](#ERC2981-_deleteDefaultRoyalty--)
+- [_setTokenRoyalty(tokenId, receiver, feeNumerator)](#ERC2981-_setTokenRoyalty-uint256-address-uint96-)
+- [_resetTokenRoyalty(tokenId)](#ERC2981-_resetTokenRoyalty-uint256-)
+
+#### ERC165
+
+#### IERC2981
+
+#### IERC165
+
+### Events
+
+#### ERC721
+
+#### IERC721Metadata
+
+#### IERC721
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### ERC2981
+
+#### ERC165
+
+#### IERC2981
+
+#### IERC165
+
+<a id="ERC721Royalty-supportsInterface-bytes4-"></a>
+
+### `supportsInterface(bytes4 interfaceId) → bool`
+*public*
+
+See [`IERC165.supportsInterface`](../utils#IERC165-supportsInterface-bytes4-).
+
+<a id="ERC721Royalty-_burn-uint256-"></a>
+
+### `_burn(uint256 tokenId)`
+*internal*
+
+See [`ERC721._burn`](#ERC721-_burn-uint256-). This override additionally clears the royalty information for the token.
+
+<a id="ERC721URIStorage"></a>
+
+## `ERC721URIStorage` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/extensions/ERC721URIStorage.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+```
+
+ERC721 token with storage based token URI management.
+
+### Functions
+- [supportsInterface(interfaceId)](#ERC721URIStorage-supportsInterface-bytes4-)
+- [tokenURI(tokenId)](#ERC721URIStorage-tokenURI-uint256-)
+- [_setTokenURI(tokenId, _tokenURI)](#ERC721URIStorage-_setTokenURI-uint256-string-)
+- [_burn(tokenId)](#ERC721URIStorage-_burn-uint256-)
+
+#### ERC721
+- [balanceOf(owner)](#ERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#ERC721-ownerOf-uint256-)
+- [name()](#ERC721-name--)
+- [symbol()](#ERC721-symbol--)
+- [_baseURI()](#ERC721-_baseURI--)
+- [approve(to, tokenId)](#ERC721-approve-address-uint256-)
+- [getApproved(tokenId)](#ERC721-getApproved-uint256-)
+- [setApprovalForAll(operator, approved)](#ERC721-setApprovalForAll-address-bool-)
+- [isApprovedForAll(owner, operator)](#ERC721-isApprovedForAll-address-address-)
+- [transferFrom(from, to, tokenId)](#ERC721-transferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId)](#ERC721-safeTransferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#ERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [_safeTransfer(from, to, tokenId, data)](#ERC721-_safeTransfer-address-address-uint256-bytes-)
+- [_ownerOf(tokenId)](#ERC721-_ownerOf-uint256-)
+- [_exists(tokenId)](#ERC721-_exists-uint256-)
+- [_isApprovedOrOwner(spender, tokenId)](#ERC721-_isApprovedOrOwner-address-uint256-)
+- [_safeMint(to, tokenId)](#ERC721-_safeMint-address-uint256-)
+- [_safeMint(to, tokenId, data)](#ERC721-_safeMint-address-uint256-bytes-)
+- [_mint(to, tokenId)](#ERC721-_mint-address-uint256-)
+- [_transfer(from, to, tokenId)](#ERC721-_transfer-address-address-uint256-)
+- [_approve(to, tokenId)](#ERC721-_approve-address-uint256-)
+- [_setApprovalForAll(owner, operator, approved)](#ERC721-_setApprovalForAll-address-address-bool-)
+- [_requireMinted(tokenId)](#ERC721-_requireMinted-uint256-)
+- [_beforeTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_beforeTokenTransfer-address-address-uint256-uint256-)
+- [_afterTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_afterTokenTransfer-address-address-uint256-uint256-)
+- [__unsafe_increaseBalance(account, amount)](#ERC721-__unsafe_increaseBalance-address-uint256-)
+
+#### IERC721Metadata
+
+#### IERC4906
+
+#### IERC721
+
+#### ERC165
+
+#### IERC165
+
+### Events
+
+#### ERC721
+
+#### IERC721Metadata
+
+#### IERC4906
+- [MetadataUpdate(_tokenId)](#IERC4906-MetadataUpdate-uint256-)
+- [BatchMetadataUpdate(_fromTokenId, _toTokenId)](#IERC4906-BatchMetadataUpdate-uint256-uint256-)
+
+#### IERC721
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### ERC165
+
+#### IERC165
+
+<a id="ERC721URIStorage-supportsInterface-bytes4-"></a>
+
+### `supportsInterface(bytes4 interfaceId) → bool`
+*public*
+
+See [`IERC165.supportsInterface`](../utils#IERC165-supportsInterface-bytes4-)
+
+<a id="ERC721URIStorage-tokenURI-uint256-"></a>
+
+### `tokenURI(uint256 tokenId) → string`
+*public*
+
+See [`IERC721Metadata.tokenURI`](#IERC721Metadata-tokenURI-uint256-).
+
+<a id="ERC721URIStorage-_setTokenURI-uint256-string-"></a>
+
+### `_setTokenURI(uint256 tokenId, string _tokenURI)`
+*internal*
+
+Sets `_tokenURI` as the tokenURI of `tokenId`.
+
+Emits [`IERC4906.MetadataUpdate`](../interfaces#IERC4906-MetadataUpdate-uint256-).
+
+Requirements:
+
+- `tokenId` must exist.
+
+<a id="ERC721URIStorage-_burn-uint256-"></a>
+
+### `_burn(uint256 tokenId)`
+*internal*
+
+See [`ERC721._burn`](#ERC721-_burn-uint256-). This override additionally checks to see if a
+token-specific URI was set for the token, and if so, it deletes the token URI from
+the storage mapping.
+
+<a id="ERC721Votes"></a>
+
+## `ERC721Votes` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/extensions/ERC721Votes.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Votes.sol";
+```
+
+Extension of ERC721 to support voting and delegation as implemented by [`Votes`](../governance#Votes), where each individual NFT counts
+as 1 vote unit.
+
+Tokens do not count as votes until they are delegated, because votes must be tracked which incurs an additional cost
+on every transfer. Token holders can either delegate to a trusted representative who will decide how to make use of
+the votes in governance decisions, or they can delegate to themselves to be their own representative.
+
+_Available since v4.5._
+
+### Functions
+- [_afterTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721Votes-_afterTokenTransfer-address-address-uint256-uint256-)
+- [_getVotingUnits(account)](#ERC721Votes-_getVotingUnits-address-)
+
+#### Votes
+- [clock()](#Votes-clock--)
+- [CLOCK_MODE()](#Votes-CLOCK_MODE--)
+- [getVotes(account)](#Votes-getVotes-address-)
+- [getPastVotes(account, timepoint)](#Votes-getPastVotes-address-uint256-)
+- [getPastTotalSupply(timepoint)](#Votes-getPastTotalSupply-uint256-)
+- [_getTotalSupply()](#Votes-_getTotalSupply--)
+- [delegates(account)](#Votes-delegates-address-)
+- [delegate(delegatee)](#Votes-delegate-address-)
+- [delegateBySig(delegatee, nonce, expiry, v, r, s)](#Votes-delegateBySig-address-uint256-uint256-uint8-bytes32-bytes32-)
+- [_delegate(account, delegatee)](#Votes-_delegate-address-address-)
+- [_transferVotingUnits(from, to, amount)](#Votes-_transferVotingUnits-address-address-uint256-)
+- [_useNonce(owner)](#Votes-_useNonce-address-)
+- [nonces(owner)](#Votes-nonces-address-)
+- [DOMAIN_SEPARATOR()](#Votes-DOMAIN_SEPARATOR--)
+
+#### IERC5805
+
+#### IVotes
+
+#### IERC6372
+
+#### EIP712
+- [_domainSeparatorV4()](#EIP712-_domainSeparatorV4--)
+- [_hashTypedDataV4(structHash)](#EIP712-_hashTypedDataV4-bytes32-)
+- [eip712Domain()](#EIP712-eip712Domain--)
+
+#### IERC5267
+
+#### ERC721
+- [supportsInterface(interfaceId)](#ERC721-supportsInterface-bytes4-)
+- [balanceOf(owner)](#ERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#ERC721-ownerOf-uint256-)
+- [name()](#ERC721-name--)
+- [symbol()](#ERC721-symbol--)
+- [tokenURI(tokenId)](#ERC721-tokenURI-uint256-)
+- [_baseURI()](#ERC721-_baseURI--)
+- [approve(to, tokenId)](#ERC721-approve-address-uint256-)
+- [getApproved(tokenId)](#ERC721-getApproved-uint256-)
+- [setApprovalForAll(operator, approved)](#ERC721-setApprovalForAll-address-bool-)
+- [isApprovedForAll(owner, operator)](#ERC721-isApprovedForAll-address-address-)
+- [transferFrom(from, to, tokenId)](#ERC721-transferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId)](#ERC721-safeTransferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#ERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [_safeTransfer(from, to, tokenId, data)](#ERC721-_safeTransfer-address-address-uint256-bytes-)
+- [_ownerOf(tokenId)](#ERC721-_ownerOf-uint256-)
+- [_exists(tokenId)](#ERC721-_exists-uint256-)
+- [_isApprovedOrOwner(spender, tokenId)](#ERC721-_isApprovedOrOwner-address-uint256-)
+- [_safeMint(to, tokenId)](#ERC721-_safeMint-address-uint256-)
+- [_safeMint(to, tokenId, data)](#ERC721-_safeMint-address-uint256-bytes-)
+- [_mint(to, tokenId)](#ERC721-_mint-address-uint256-)
+- [_burn(tokenId)](#ERC721-_burn-uint256-)
+- [_transfer(from, to, tokenId)](#ERC721-_transfer-address-address-uint256-)
+- [_approve(to, tokenId)](#ERC721-_approve-address-uint256-)
+- [_setApprovalForAll(owner, operator, approved)](#ERC721-_setApprovalForAll-address-address-bool-)
+- [_requireMinted(tokenId)](#ERC721-_requireMinted-uint256-)
+- [_beforeTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_beforeTokenTransfer-address-address-uint256-uint256-)
+- [__unsafe_increaseBalance(account, amount)](#ERC721-__unsafe_increaseBalance-address-uint256-)
+
+#### IERC721Metadata
+
+#### IERC721
+
+#### ERC165
+
+#### IERC165
+
+### Events
+
+#### Votes
+
+#### IERC5805
+
+#### IVotes
+- [DelegateChanged(delegator, fromDelegate, toDelegate)](#IVotes-DelegateChanged-address-address-address-)
+- [DelegateVotesChanged(delegate, previousBalance, newBalance)](#IVotes-DelegateVotesChanged-address-uint256-uint256-)
+
+#### IERC6372
+
+#### EIP712
+
+#### IERC5267
+- [EIP712DomainChanged()](#IERC5267-EIP712DomainChanged--)
+
+#### ERC721
+
+#### IERC721Metadata
+
+#### IERC721
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### ERC165
+
+#### IERC165
+
+<a id="ERC721Votes-_afterTokenTransfer-address-address-uint256-uint256-"></a>
+
+### `_afterTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize)`
+*internal*
+
+See [`ERC721._afterTokenTransfer`](#ERC721-_afterTokenTransfer-address-address-uint256-uint256-). Adjusts votes when tokens are transferred.
+
+Emits a [`IVotes.DelegateVotesChanged`](../governance#IVotes-DelegateVotesChanged-address-uint256-uint256-) event.
+
+<a id="ERC721Votes-_getVotingUnits-address-"></a>
+
+### `_getVotingUnits(address account) → uint256`
+*internal*
+
+Returns the balance of `account`.
+
+WARNING: Overriding this function will likely result in incorrect vote tracking.
+
+<a id="ERC721Wrapper"></a>
+
+## `ERC721Wrapper` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/extensions/ERC721Wrapper.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Wrapper.sol";
+```
+
+Extension of the ERC721 token contract to support token wrapping.
+
+Users can deposit and withdraw an "underlying token" and receive a "wrapped token" with a matching tokenId. This is useful
+in conjunction with other modules. For example, combining this wrapping mechanism with [`ERC721Votes`](#ERC721Votes) will allow the
+wrapping of an existing "basic" ERC721 into a governance token.
+
+_Available since v4.9.0_
+
+### Functions
+- [constructor(underlyingToken)](#ERC721Wrapper-constructor-contract-IERC721-)
+- [depositFor(account, tokenIds)](#ERC721Wrapper-depositFor-address-uint256---)
+- [withdrawTo(account, tokenIds)](#ERC721Wrapper-withdrawTo-address-uint256---)
+- [onERC721Received(, from, tokenId, )](#ERC721Wrapper-onERC721Received-address-address-uint256-bytes-)
+- [_recover(account, tokenId)](#ERC721Wrapper-_recover-address-uint256-)
+- [underlying()](#ERC721Wrapper-underlying--)
+
+#### IERC721Receiver
+
+#### ERC721
+- [supportsInterface(interfaceId)](#ERC721-supportsInterface-bytes4-)
+- [balanceOf(owner)](#ERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#ERC721-ownerOf-uint256-)
+- [name()](#ERC721-name--)
+- [symbol()](#ERC721-symbol--)
+- [tokenURI(tokenId)](#ERC721-tokenURI-uint256-)
+- [_baseURI()](#ERC721-_baseURI--)
+- [approve(to, tokenId)](#ERC721-approve-address-uint256-)
+- [getApproved(tokenId)](#ERC721-getApproved-uint256-)
+- [setApprovalForAll(operator, approved)](#ERC721-setApprovalForAll-address-bool-)
+- [isApprovedForAll(owner, operator)](#ERC721-isApprovedForAll-address-address-)
+- [transferFrom(from, to, tokenId)](#ERC721-transferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId)](#ERC721-safeTransferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#ERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [_safeTransfer(from, to, tokenId, data)](#ERC721-_safeTransfer-address-address-uint256-bytes-)
+- [_ownerOf(tokenId)](#ERC721-_ownerOf-uint256-)
+- [_exists(tokenId)](#ERC721-_exists-uint256-)
+- [_isApprovedOrOwner(spender, tokenId)](#ERC721-_isApprovedOrOwner-address-uint256-)
+- [_safeMint(to, tokenId)](#ERC721-_safeMint-address-uint256-)
+- [_safeMint(to, tokenId, data)](#ERC721-_safeMint-address-uint256-bytes-)
+- [_mint(to, tokenId)](#ERC721-_mint-address-uint256-)
+- [_burn(tokenId)](#ERC721-_burn-uint256-)
+- [_transfer(from, to, tokenId)](#ERC721-_transfer-address-address-uint256-)
+- [_approve(to, tokenId)](#ERC721-_approve-address-uint256-)
+- [_setApprovalForAll(owner, operator, approved)](#ERC721-_setApprovalForAll-address-address-bool-)
+- [_requireMinted(tokenId)](#ERC721-_requireMinted-uint256-)
+- [_beforeTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_beforeTokenTransfer-address-address-uint256-uint256-)
+- [_afterTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_afterTokenTransfer-address-address-uint256-uint256-)
+- [__unsafe_increaseBalance(account, amount)](#ERC721-__unsafe_increaseBalance-address-uint256-)
+
+#### IERC721Metadata
+
+#### IERC721
+
+#### ERC165
+
+#### IERC165
+
+### Events
+
+#### IERC721Receiver
+
+#### ERC721
+
+#### IERC721Metadata
+
+#### IERC721
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### ERC165
+
+#### IERC165
+
+<a id="ERC721Wrapper-constructor-contract-IERC721-"></a>
+
+### `constructor(contract IERC721 underlyingToken)`
+*internal*
+
+<a id="ERC721Wrapper-depositFor-address-uint256---"></a>
+
+### `depositFor(address account, uint256[] tokenIds) → bool`
+*public*
+
+Allow a user to deposit underlying tokens and mint the corresponding tokenIds.
+
+<a id="ERC721Wrapper-withdrawTo-address-uint256---"></a>
+
+### `withdrawTo(address account, uint256[] tokenIds) → bool`
+*public*
+
+Allow a user to burn wrapped tokens and withdraw the corresponding tokenIds of the underlying tokens.
+
+<a id="ERC721Wrapper-onERC721Received-address-address-uint256-bytes-"></a>
+
+### `onERC721Received(address, address from, uint256 tokenId, bytes) → bytes4`
+*public*
+
+Overrides [`IERC721Receiver.onERC721Received`](#IERC721Receiver-onERC721Received-address-address-uint256-bytes-) to allow minting on direct ERC721 transfers to
+this contract.
+
+In case there's data attached, it validates that the operator is this contract, so only trusted data
+is accepted from [`ERC20Wrapper.depositFor`](ERC20#ERC20Wrapper-depositFor-address-uint256-).
+
+WARNING: Doesn't work with unsafe transfers (eg. [`IERC721.transferFrom`](#IERC721-transferFrom-address-address-uint256-)). Use [`ERC721Wrapper._recover`](#ERC721Wrapper-_recover-address-uint256-)
+for recovering in that scenario.
+
+<a id="ERC721Wrapper-_recover-address-uint256-"></a>
+
+### `_recover(address account, uint256 tokenId) → uint256`
+*internal*
+
+Mint a wrapped token to cover any underlyingToken that would have been transferred by mistake. Internal
+function that can be exposed with access control if desired.
+
+<a id="ERC721Wrapper-underlying--"></a>
+
+### `underlying() → contract IERC721`
+*public*
+
+Returns the underlying token.
+
+<a id="IERC721Enumerable"></a>
+
+## `IERC721Enumerable` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/extensions/IERC721Enumerable.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
+```
+
+See https://eips.ethereum.org/EIPS/eip-721
+
+### Functions
+- [totalSupply()](#IERC721Enumerable-totalSupply--)
+- [tokenOfOwnerByIndex(owner, index)](#IERC721Enumerable-tokenOfOwnerByIndex-address-uint256-)
+- [tokenByIndex(index)](#IERC721Enumerable-tokenByIndex-uint256-)
+
+#### IERC721
+- [balanceOf(owner)](#IERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#IERC721-ownerOf-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#IERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [safeTransferFrom(from, to, tokenId)](#IERC721-safeTransferFrom-address-address-uint256-)
+- [transferFrom(from, to, tokenId)](#IERC721-transferFrom-address-address-uint256-)
+- [approve(to, tokenId)](#IERC721-approve-address-uint256-)
+- [setApprovalForAll(operator, approved)](#IERC721-setApprovalForAll-address-bool-)
+- [getApproved(tokenId)](#IERC721-getApproved-uint256-)
+- [isApprovedForAll(owner, operator)](#IERC721-isApprovedForAll-address-address-)
+
+#### IERC165
+- [supportsInterface(interfaceId)](#IERC165-supportsInterface-bytes4-)
+
+### Events
+
+#### IERC721
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### IERC165
+
+<a id="IERC721Enumerable-totalSupply--"></a>
+
+### `totalSupply() → uint256`
+*external*
+
+Returns the total amount of tokens stored by the contract.
+
+<a id="IERC721Enumerable-tokenOfOwnerByIndex-address-uint256-"></a>
+
+### `tokenOfOwnerByIndex(address owner, uint256 index) → uint256`
+*external*
+
+Returns a token ID owned by `owner` at a given `index` of its token list.
+Use along with [`ERC1155.balanceOf`](ERC1155#ERC1155-balanceOf-address-uint256-) to enumerate all of ``owner``'s tokens.
+
+<a id="IERC721Enumerable-tokenByIndex-uint256-"></a>
+
+### `tokenByIndex(uint256 index) → uint256`
+*external*
+
+Returns a token ID at a given `index` of all the tokens stored by the contract.
+Use along with [`ERC1155Supply.totalSupply`](ERC1155#ERC1155Supply-totalSupply-uint256-) to enumerate all tokens.
+
+<a id="IERC721Metadata"></a>
+
+## `IERC721Metadata` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/extensions/IERC721Metadata.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+```
+
+See https://eips.ethereum.org/EIPS/eip-721
+
+### Functions
+- [name()](#IERC721Metadata-name--)
+- [symbol()](#IERC721Metadata-symbol--)
+- [tokenURI(tokenId)](#IERC721Metadata-tokenURI-uint256-)
+
+#### IERC721
+- [balanceOf(owner)](#IERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#IERC721-ownerOf-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#IERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [safeTransferFrom(from, to, tokenId)](#IERC721-safeTransferFrom-address-address-uint256-)
+- [transferFrom(from, to, tokenId)](#IERC721-transferFrom-address-address-uint256-)
+- [approve(to, tokenId)](#IERC721-approve-address-uint256-)
+- [setApprovalForAll(operator, approved)](#IERC721-setApprovalForAll-address-bool-)
+- [getApproved(tokenId)](#IERC721-getApproved-uint256-)
+- [isApprovedForAll(owner, operator)](#IERC721-isApprovedForAll-address-address-)
+
+#### IERC165
+- [supportsInterface(interfaceId)](#IERC165-supportsInterface-bytes4-)
+
+### Events
+
+#### IERC721
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### IERC165
+
+<a id="IERC721Metadata-name--"></a>
+
+### `name() → string`
+*external*
+
+Returns the token collection name.
+
+<a id="IERC721Metadata-symbol--"></a>
+
+### `symbol() → string`
+*external*
+
+Returns the token collection symbol.
+
+<a id="IERC721Metadata-tokenURI-uint256-"></a>
+
+### `tokenURI(uint256 tokenId) → string`
+*external*
+
+Returns the Uniform Resource Identifier (URI) for `tokenId` token.
+
+<a id="ERC721PresetMinterPauserAutoId"></a>
+
+## `ERC721PresetMinterPauserAutoId` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/presets/ERC721PresetMinterPauserAutoId.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/presets/ERC721PresetMinterPauserAutoId.sol";
+```
+
+[`ERC721`](#ERC721) token, including:
+
+ - ability for holders to burn (destroy) their tokens
+ - a minter role that allows for token minting (creation)
+ - a pauser role that allows to stop all token transfers
+ - token ID and URI autogeneration
+
+This contract uses [`AccessControl`](../access#AccessControl) to lock permissioned functions using the
+different roles - head to its documentation for details.
+
+The account that deploys the contract will be granted the minter and pauser
+roles, as well as the default admin role, which will let it grant both minter
+and pauser roles to other accounts.
+
+_Deprecated in favor of [Contracts Wizard](https://wizard.openzeppelin.com/)._
+
+### Functions
+- [constructor(name, symbol, baseTokenURI)](#ERC721PresetMinterPauserAutoId-constructor-string-string-string-)
+- [_baseURI()](#ERC721PresetMinterPauserAutoId-_baseURI--)
+- [mint(to)](#ERC721PresetMinterPauserAutoId-mint-address-)
+- [pause()](#ERC721PresetMinterPauserAutoId-pause--)
+- [unpause()](#ERC721PresetMinterPauserAutoId-unpause--)
+- [_beforeTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721PresetMinterPauserAutoId-_beforeTokenTransfer-address-address-uint256-uint256-)
+- [supportsInterface(interfaceId)](#ERC721PresetMinterPauserAutoId-supportsInterface-bytes4-)
+- [MINTER_ROLE()](#ERC721PresetMinterPauserAutoId-MINTER_ROLE-bytes32)
+- [PAUSER_ROLE()](#ERC721PresetMinterPauserAutoId-PAUSER_ROLE-bytes32)
+
+#### ERC721Pausable
+
+#### Pausable
+- [paused()](#Pausable-paused--)
+- [_requireNotPaused()](#Pausable-_requireNotPaused--)
+- [_requirePaused()](#Pausable-_requirePaused--)
+- [_pause()](#Pausable-_pause--)
+- [_unpause()](#Pausable-_unpause--)
+
+#### ERC721Burnable
+- [burn(tokenId)](#ERC721Burnable-burn-uint256-)
+
+#### ERC721Enumerable
+- [tokenOfOwnerByIndex(owner, index)](#ERC721Enumerable-tokenOfOwnerByIndex-address-uint256-)
+- [totalSupply()](#ERC721Enumerable-totalSupply--)
+- [tokenByIndex(index)](#ERC721Enumerable-tokenByIndex-uint256-)
+
+#### IERC721Enumerable
+
+#### ERC721
+- [balanceOf(owner)](#ERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#ERC721-ownerOf-uint256-)
+- [name()](#ERC721-name--)
+- [symbol()](#ERC721-symbol--)
+- [tokenURI(tokenId)](#ERC721-tokenURI-uint256-)
+- [approve(to, tokenId)](#ERC721-approve-address-uint256-)
+- [getApproved(tokenId)](#ERC721-getApproved-uint256-)
+- [setApprovalForAll(operator, approved)](#ERC721-setApprovalForAll-address-bool-)
+- [isApprovedForAll(owner, operator)](#ERC721-isApprovedForAll-address-address-)
+- [transferFrom(from, to, tokenId)](#ERC721-transferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId)](#ERC721-safeTransferFrom-address-address-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#ERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [_safeTransfer(from, to, tokenId, data)](#ERC721-_safeTransfer-address-address-uint256-bytes-)
+- [_ownerOf(tokenId)](#ERC721-_ownerOf-uint256-)
+- [_exists(tokenId)](#ERC721-_exists-uint256-)
+- [_isApprovedOrOwner(spender, tokenId)](#ERC721-_isApprovedOrOwner-address-uint256-)
+- [_safeMint(to, tokenId)](#ERC721-_safeMint-address-uint256-)
+- [_safeMint(to, tokenId, data)](#ERC721-_safeMint-address-uint256-bytes-)
+- [_mint(to, tokenId)](#ERC721-_mint-address-uint256-)
+- [_burn(tokenId)](#ERC721-_burn-uint256-)
+- [_transfer(from, to, tokenId)](#ERC721-_transfer-address-address-uint256-)
+- [_approve(to, tokenId)](#ERC721-_approve-address-uint256-)
+- [_setApprovalForAll(owner, operator, approved)](#ERC721-_setApprovalForAll-address-address-bool-)
+- [_requireMinted(tokenId)](#ERC721-_requireMinted-uint256-)
+- [_afterTokenTransfer(from, to, firstTokenId, batchSize)](#ERC721-_afterTokenTransfer-address-address-uint256-uint256-)
+- [__unsafe_increaseBalance(account, amount)](#ERC721-__unsafe_increaseBalance-address-uint256-)
+
+#### IERC721Metadata
+
+#### IERC721
+
+#### AccessControlEnumerable
+- [getRoleMember(role, index)](#AccessControlEnumerable-getRoleMember-bytes32-uint256-)
+- [getRoleMemberCount(role)](#AccessControlEnumerable-getRoleMemberCount-bytes32-)
+- [_grantRole(role, account)](#AccessControlEnumerable-_grantRole-bytes32-address-)
+- [_revokeRole(role, account)](#AccessControlEnumerable-_revokeRole-bytes32-address-)
+
+#### AccessControl
+- [hasRole(role, account)](#AccessControl-hasRole-bytes32-address-)
+- [_checkRole(role)](#AccessControl-_checkRole-bytes32-)
+- [_checkRole(role, account)](#AccessControl-_checkRole-bytes32-address-)
+- [getRoleAdmin(role)](#AccessControl-getRoleAdmin-bytes32-)
+- [grantRole(role, account)](#AccessControl-grantRole-bytes32-address-)
+- [revokeRole(role, account)](#AccessControl-revokeRole-bytes32-address-)
+- [renounceRole(role, account)](#AccessControl-renounceRole-bytes32-address-)
+- [_setupRole(role, account)](#AccessControl-_setupRole-bytes32-address-)
+- [_setRoleAdmin(role, adminRole)](#AccessControl-_setRoleAdmin-bytes32-bytes32-)
+- [DEFAULT_ADMIN_ROLE()](#AccessControl-DEFAULT_ADMIN_ROLE-bytes32)
+
+#### ERC165
+
+#### IERC165
+
+#### IAccessControlEnumerable
+
+#### IAccessControl
+
+### Events
+
+#### ERC721Pausable
+
+#### Pausable
+- [Paused(account)](#Pausable-Paused-address-)
+- [Unpaused(account)](#Pausable-Unpaused-address-)
+
+#### ERC721Burnable
+
+#### ERC721Enumerable
+
+#### IERC721Enumerable
+
+#### ERC721
+
+#### IERC721Metadata
+
+#### IERC721
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### AccessControlEnumerable
+
+#### AccessControl
+
+#### ERC165
+
+#### IERC165
+
+#### IAccessControlEnumerable
+
+#### IAccessControl
+- [RoleAdminChanged(role, previousAdminRole, newAdminRole)](#IAccessControl-RoleAdminChanged-bytes32-bytes32-bytes32-)
+- [RoleGranted(role, account, sender)](#IAccessControl-RoleGranted-bytes32-address-address-)
+- [RoleRevoked(role, account, sender)](#IAccessControl-RoleRevoked-bytes32-address-address-)
+
+<a id="ERC721PresetMinterPauserAutoId-constructor-string-string-string-"></a>
+
+### `constructor(string name, string symbol, string baseTokenURI)`
+*public*
+
+Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` to the
+account that deploys the contract.
+
+Token URIs will be autogenerated based on `baseURI` and their token IDs.
+See [`ERC721.tokenURI`](#ERC721-tokenURI-uint256-).
+
+<a id="ERC721PresetMinterPauserAutoId-_baseURI--"></a>
+
+### `_baseURI() → string`
+*internal*
+
+Base URI for computing [`ERC721.tokenURI`](#ERC721-tokenURI-uint256-). If set, the resulting URI for each
+token will be the concatenation of the `baseURI` and the `tokenId`. Empty
+by default, can be overridden in child contracts.
+
+<a id="ERC721PresetMinterPauserAutoId-mint-address-"></a>
+
+### `mint(address to)`
+*public*
+
+Creates a new token for `to`. Its token ID will be automatically
+assigned (and available on the emitted [`IERC721.Transfer`](#IERC721-Transfer-address-address-uint256-) event), and the token
+URI autogenerated based on the base URI passed at construction.
+
+See [`ERC721._mint`](#ERC721-_mint-address-uint256-).
+
+Requirements:
+
+- the caller must have the `MINTER_ROLE`.
+
+<a id="ERC721PresetMinterPauserAutoId-pause--"></a>
+
+### `pause()`
+*public*
+
+Pauses all token transfers.
+
+See [`ERC721Pausable`](#ERC721Pausable) and [`Pausable._pause`](../security#Pausable-_pause--).
+
+Requirements:
+
+- the caller must have the `PAUSER_ROLE`.
+
+<a id="ERC721PresetMinterPauserAutoId-unpause--"></a>
+
+### `unpause()`
+*public*
+
+Unpauses all token transfers.
+
+See [`ERC721Pausable`](#ERC721Pausable) and [`Pausable._unpause`](../security#Pausable-_unpause--).
+
+Requirements:
+
+- the caller must have the `PAUSER_ROLE`.
+
+<a id="ERC721PresetMinterPauserAutoId-_beforeTokenTransfer-address-address-uint256-uint256-"></a>
+
+### `_beforeTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize)`
+*internal*
+
+<a id="ERC721PresetMinterPauserAutoId-supportsInterface-bytes4-"></a>
+
+### `supportsInterface(bytes4 interfaceId) → bool`
+*public*
+
+See [`IERC165.supportsInterface`](../utils#IERC165-supportsInterface-bytes4-).
+
+<a id="ERC721PresetMinterPauserAutoId-MINTER_ROLE-bytes32"></a>
+
+### `MINTER_ROLE() → bytes32`
+*public*
+
+<a id="ERC721PresetMinterPauserAutoId-PAUSER_ROLE-bytes32"></a>
+
+### `PAUSER_ROLE() → bytes32`
+*public*
+
+<a id="ERC721Holder"></a>
+
+## `ERC721Holder` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/token/ERC721/utils/ERC721Holder.sol)
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+```
+
+Implementation of the [`IERC721Receiver`](#IERC721Receiver) interface.
+
+Accepts all token transfers.
+Make sure the contract is able to use its token with [`IERC721.safeTransferFrom`](#IERC721-safeTransferFrom-address-address-uint256-), [`IERC721.approve`](#IERC721-approve-address-uint256-) or [`IERC721.setApprovalForAll`](#IERC721-setApprovalForAll-address-bool-).
+
+### Functions
+- [onERC721Received(, , , )](#ERC721Holder-onERC721Received-address-address-uint256-bytes-)
+
+#### IERC721Receiver
+
+<a id="ERC721Holder-onERC721Received-address-address-uint256-bytes-"></a>
+
+### `onERC721Received(address, address, uint256, bytes) → bytes4`
+*public*
+
+See [`IERC721Receiver.onERC721Received`](#IERC721Receiver-onERC721Received-address-address-uint256-bytes-).
+
+Always returns `IERC721Receiver.onERC721Received.selector`.
+

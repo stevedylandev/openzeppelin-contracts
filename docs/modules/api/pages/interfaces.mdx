@@ -1,0 +1,894 @@
+---
+title: "Interfaces"
+description: "Smart contract interfaces utilities and implementations"
+---
+
+= Interfaces
+
+[.readme-notice]
+NOTE: This document is better viewed at https://docs.openzeppelin.com/contracts/api/interfaces
+
+== List of standardized interfaces
+These interfaces are available as `.sol` files, and also as compiler `.json` ABI files (through the npm package). These
+are useful to interact with third party contracts that implement them.
+
+- [`IERC20`](token/ERC20#IERC20)
+- [`IERC20Metadata`](token/ERC20#IERC20Metadata)
+- [`IERC165`](utils#IERC165)
+- [`IERC721`](token/ERC721#IERC721)
+- [`IERC721Receiver`](token/ERC721#IERC721Receiver)
+- [`IERC721Enumerable`](token/ERC721#IERC721Enumerable)
+- [`IERC721Metadata`](token/ERC721#IERC721Metadata)
+- [`IERC777`](token/ERC777#IERC777)
+- [`IERC777Recipient`](token/ERC777#IERC777Recipient)
+- [`IERC777Sender`](token/ERC777#IERC777Sender)
+- [`IERC1155`](token/ERC1155#IERC1155)
+- [`IERC1155Receiver`](token/ERC1155#IERC1155Receiver)
+- [`IERC1155MetadataURI`](token/ERC1155#IERC1155MetadataURI)
+- [`IERC1271`](#IERC1271)
+- [`IERC1363`](#IERC1363)
+- [`IERC1363Receiver`](#IERC1363Receiver)
+- [`IERC1363Spender`](#IERC1363Spender)
+- [`IERC1820Implementer`](utils#IERC1820Implementer)
+- [`IERC1820Registry`](utils#IERC1820Registry)
+- [`IERC1822Proxiable`](#IERC1822Proxiable)
+- [`IERC2612`](#IERC2612)
+- [`IERC2981`](#IERC2981)
+- [`IERC3156FlashLender`](#IERC3156FlashLender)
+- [`IERC3156FlashBorrower`](#IERC3156FlashBorrower)
+- [`IERC4626`](#IERC4626)
+- [`IERC4906`](#IERC4906)
+- [`IERC5267`](#IERC5267)
+- [`IERC5313`](#IERC5313)
+- [`IERC5805`](#IERC5805)
+- [`IERC6372`](#IERC6372)
+
+== Detailed ABI
+
+[`IERC1271`](#IERC1271)
+
+[`IERC1363`](#IERC1363)
+
+[`IERC1363Receiver`](#IERC1363Receiver)
+
+[`IERC1363Spender`](#IERC1363Spender)
+
+[`IERC1820Implementer`](utils#IERC1820Implementer)
+
+[`IERC1820Registry`](utils#IERC1820Registry)
+
+[`IERC1822Proxiable`](#IERC1822Proxiable)
+
+[`IERC2612`](#IERC2612)
+
+[`IERC2981`](#IERC2981)
+
+[`IERC3156FlashLender`](#IERC3156FlashLender)
+
+[`IERC3156FlashBorrower`](#IERC3156FlashBorrower)
+
+[`IERC4626`](#IERC4626)
+
+[`IERC5313`](#IERC5313)
+
+[`IERC5267`](#IERC5267)
+
+[`IERC5805`](#IERC5805)
+
+[`IERC6372`](#IERC6372)
+
+<a id="IERC1271"></a>
+
+## `IERC1271` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC1271.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC1271.sol";
+```
+
+Interface of the ERC1271 standard signature validation method for
+contracts as defined in [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271).
+
+_Available since v4.1._
+
+### Functions
+- [isValidSignature(hash, signature)](#IERC1271-isValidSignature-bytes32-bytes-)
+
+<a id="IERC1271-isValidSignature-bytes32-bytes-"></a>
+
+### `isValidSignature(bytes32 hash, bytes signature) → bytes4 magicValue`
+*external*
+
+Should return whether the signature provided is valid for the provided data
+
+<a id="IERC1363"></a>
+
+## `IERC1363` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC1363.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC1363.sol";
+```
+
+Interface of an ERC1363 compliant contract, as defined in the
+[EIP](https://eips.ethereum.org/EIPS/eip-1363).
+
+Defines a interface for ERC20 tokens that supports executing recipient
+code after `transfer` or `transferFrom`, or spender code after `approve`.
+
+### Functions
+- [transferAndCall(to, amount)](#IERC1363-transferAndCall-address-uint256-)
+- [transferAndCall(to, amount, data)](#IERC1363-transferAndCall-address-uint256-bytes-)
+- [transferFromAndCall(from, to, amount)](#IERC1363-transferFromAndCall-address-address-uint256-)
+- [transferFromAndCall(from, to, amount, data)](#IERC1363-transferFromAndCall-address-address-uint256-bytes-)
+- [approveAndCall(spender, amount)](#IERC1363-approveAndCall-address-uint256-)
+- [approveAndCall(spender, amount, data)](#IERC1363-approveAndCall-address-uint256-bytes-)
+
+#### IERC20
+- [totalSupply()](#IERC20-totalSupply--)
+- [balanceOf(account)](#IERC20-balanceOf-address-)
+- [transfer(to, amount)](#IERC20-transfer-address-uint256-)
+- [allowance(owner, spender)](#IERC20-allowance-address-address-)
+- [approve(spender, amount)](#IERC20-approve-address-uint256-)
+- [transferFrom(from, to, amount)](#IERC20-transferFrom-address-address-uint256-)
+
+#### IERC165
+- [supportsInterface(interfaceId)](#IERC165-supportsInterface-bytes4-)
+
+### Events
+
+#### IERC20
+- [Transfer(from, to, value)](#IERC20-Transfer-address-address-uint256-)
+- [Approval(owner, spender, value)](#IERC20-Approval-address-address-uint256-)
+
+#### IERC165
+
+<a id="IERC1363-transferAndCall-address-uint256-"></a>
+
+### `transferAndCall(address to, uint256 amount) → bool`
+*external*
+
+Transfer tokens from `msg.sender` to another address and then call `onTransferReceived` on receiver
+
+<a id="IERC1363-transferAndCall-address-uint256-bytes-"></a>
+
+### `transferAndCall(address to, uint256 amount, bytes data) → bool`
+*external*
+
+Transfer tokens from `msg.sender` to another address and then call `onTransferReceived` on receiver
+
+<a id="IERC1363-transferFromAndCall-address-address-uint256-"></a>
+
+### `transferFromAndCall(address from, address to, uint256 amount) → bool`
+*external*
+
+Transfer tokens from one address to another and then call `onTransferReceived` on receiver
+
+<a id="IERC1363-transferFromAndCall-address-address-uint256-bytes-"></a>
+
+### `transferFromAndCall(address from, address to, uint256 amount, bytes data) → bool`
+*external*
+
+Transfer tokens from one address to another and then call `onTransferReceived` on receiver
+
+<a id="IERC1363-approveAndCall-address-uint256-"></a>
+
+### `approveAndCall(address spender, uint256 amount) → bool`
+*external*
+
+Approve the passed address to spend the specified amount of tokens on behalf of msg.sender
+and then call `onApprovalReceived` on spender.
+
+<a id="IERC1363-approveAndCall-address-uint256-bytes-"></a>
+
+### `approveAndCall(address spender, uint256 amount, bytes data) → bool`
+*external*
+
+Approve the passed address to spend the specified amount of tokens on behalf of msg.sender
+and then call `onApprovalReceived` on spender.
+
+<a id="IERC1363Receiver"></a>
+
+## `IERC1363Receiver` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC1363Receiver.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC1363Receiver.sol";
+```
+
+Interface for any contract that wants to support [`IERC1363.transferAndCall`](#IERC1363-transferAndCall-address-uint256-bytes-)
+or [`IERC1363.transferFromAndCall`](#IERC1363-transferFromAndCall-address-address-uint256-bytes-) from [`IERC1363`](#IERC1363) token contracts.
+
+### Functions
+- [onTransferReceived(operator, from, amount, data)](#IERC1363Receiver-onTransferReceived-address-address-uint256-bytes-)
+
+<a id="IERC1363Receiver-onTransferReceived-address-address-uint256-bytes-"></a>
+
+### `onTransferReceived(address operator, address from, uint256 amount, bytes data) → bytes4`
+*external*
+
+Any ERC1363 smart contract calls this function on the recipient
+after a `transfer` or a `transferFrom`. This function MAY throw to revert and reject the
+transfer. Return of other than the magic value MUST result in the
+transaction being reverted.
+Note: the token contract address is always the message sender.
+
+<a id="IERC1363Spender"></a>
+
+## `IERC1363Spender` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC1363Spender.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC1363Spender.sol";
+```
+
+Interface for any contract that wants to support [`IERC1363.approveAndCall`](#IERC1363-approveAndCall-address-uint256-bytes-)
+from [`IERC1363`](#IERC1363) token contracts.
+
+### Functions
+- [onApprovalReceived(owner, amount, data)](#IERC1363Spender-onApprovalReceived-address-uint256-bytes-)
+
+<a id="IERC1363Spender-onApprovalReceived-address-uint256-bytes-"></a>
+
+### `onApprovalReceived(address owner, uint256 amount, bytes data) → bytes4`
+*external*
+
+Any ERC1363 smart contract calls this function on the recipient
+after an `approve`. This function MAY throw to revert and reject the
+approval. Return of other than the magic value MUST result in the
+transaction being reverted.
+Note: the token contract address is always the message sender.
+
+<a id="IERC1967"></a>
+
+## `IERC1967` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC1967.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC1967.sol";
+```
+
+ERC-1967: Proxy Storage Slots. This interface contains the events defined in the ERC.
+
+_Available since v4.8.3._
+
+### Events
+- [Upgraded(implementation)](#IERC1967-Upgraded-address-)
+- [AdminChanged(previousAdmin, newAdmin)](#IERC1967-AdminChanged-address-address-)
+- [BeaconUpgraded(beacon)](#IERC1967-BeaconUpgraded-address-)
+
+<a id="IERC1967-Upgraded-address-"></a>
+
+### `Upgraded(address indexed implementation)`
+*event*
+
+Emitted when the implementation is upgraded.
+
+<a id="IERC1967-AdminChanged-address-address-"></a>
+
+### `AdminChanged(address previousAdmin, address newAdmin)`
+*event*
+
+Emitted when the admin account has changed.
+
+<a id="IERC1967-BeaconUpgraded-address-"></a>
+
+### `BeaconUpgraded(address indexed beacon)`
+*event*
+
+Emitted when the beacon is changed.
+
+<a id="IERC2309"></a>
+
+## `IERC2309` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC2309.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC2309.sol";
+```
+
+ERC-2309: ERC-721 Consecutive Transfer Extension.
+
+_Available since v4.8._
+
+### Events
+- [ConsecutiveTransfer(fromTokenId, toTokenId, fromAddress, toAddress)](#IERC2309-ConsecutiveTransfer-uint256-uint256-address-address-)
+
+<a id="IERC2309-ConsecutiveTransfer-uint256-uint256-address-address-"></a>
+
+### `ConsecutiveTransfer(uint256 indexed fromTokenId, uint256 toTokenId, address indexed fromAddress, address indexed toAddress)`
+*event*
+
+Emitted when the tokens from `fromTokenId` to `toTokenId` are transferred from `fromAddress` to `toAddress`.
+
+<a id="IERC2612"></a>
+
+## `IERC2612` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC2612.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC2612.sol";
+```
+
+### Functions
+
+#### IERC20Permit
+- [permit(owner, spender, value, deadline, v, r, s)](#IERC20Permit-permit-address-address-uint256-uint256-uint8-bytes32-bytes32-)
+- [nonces(owner)](#IERC20Permit-nonces-address-)
+- [DOMAIN_SEPARATOR()](#IERC20Permit-DOMAIN_SEPARATOR--)
+
+<a id="IERC2981"></a>
+
+## `IERC2981` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC2981.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC2981.sol";
+```
+
+Interface for the NFT Royalty Standard.
+
+A standardized way to retrieve royalty payment information for non-fungible tokens (NFTs) to enable universal
+support for royalty payments across all NFT marketplaces and ecosystem participants.
+
+_Available since v4.5._
+
+### Functions
+- [royaltyInfo(tokenId, salePrice)](#IERC2981-royaltyInfo-uint256-uint256-)
+
+#### IERC165
+- [supportsInterface(interfaceId)](#IERC165-supportsInterface-bytes4-)
+
+<a id="IERC2981-royaltyInfo-uint256-uint256-"></a>
+
+### `royaltyInfo(uint256 tokenId, uint256 salePrice) → address receiver, uint256 royaltyAmount`
+*external*
+
+Returns how much royalty is owed and to whom, based on a sale price that may be denominated in any unit of
+exchange. The royalty amount is denominated and should be paid in that same unit of exchange.
+
+<a id="IERC3156FlashBorrower"></a>
+
+## `IERC3156FlashBorrower` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC3156FlashBorrower.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC3156FlashBorrower.sol";
+```
+
+Interface of the ERC3156 FlashBorrower, as defined in
+[ERC-3156](https://eips.ethereum.org/EIPS/eip-3156).
+
+_Available since v4.1._
+
+### Functions
+- [onFlashLoan(initiator, token, amount, fee, data)](#IERC3156FlashBorrower-onFlashLoan-address-address-uint256-uint256-bytes-)
+
+<a id="IERC3156FlashBorrower-onFlashLoan-address-address-uint256-uint256-bytes-"></a>
+
+### `onFlashLoan(address initiator, address token, uint256 amount, uint256 fee, bytes data) → bytes32`
+*external*
+
+Receive a flash loan.
+
+<a id="IERC3156FlashLender"></a>
+
+## `IERC3156FlashLender` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC3156FlashLender.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC3156FlashLender.sol";
+```
+
+Interface of the ERC3156 FlashLender, as defined in
+[ERC-3156](https://eips.ethereum.org/EIPS/eip-3156).
+
+_Available since v4.1._
+
+### Functions
+- [maxFlashLoan(token)](#IERC3156FlashLender-maxFlashLoan-address-)
+- [flashFee(token, amount)](#IERC3156FlashLender-flashFee-address-uint256-)
+- [flashLoan(receiver, token, amount, data)](#IERC3156FlashLender-flashLoan-contract-IERC3156FlashBorrower-address-uint256-bytes-)
+
+<a id="IERC3156FlashLender-maxFlashLoan-address-"></a>
+
+### `maxFlashLoan(address token) → uint256`
+*external*
+
+The amount of currency available to be lended.
+
+<a id="IERC3156FlashLender-flashFee-address-uint256-"></a>
+
+### `flashFee(address token, uint256 amount) → uint256`
+*external*
+
+The fee to be charged for a given loan.
+
+<a id="IERC3156FlashLender-flashLoan-contract-IERC3156FlashBorrower-address-uint256-bytes-"></a>
+
+### `flashLoan(contract IERC3156FlashBorrower receiver, address token, uint256 amount, bytes data) → bool`
+*external*
+
+Initiate a flash loan.
+
+<a id="IERC4626"></a>
+
+## `IERC4626` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC4626.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC4626.sol";
+```
+
+Interface of the ERC4626 "Tokenized Vault Standard", as defined in
+[ERC-4626](https://eips.ethereum.org/EIPS/eip-4626).
+
+_Available since v4.7._
+
+### Functions
+- [asset()](#IERC4626-asset--)
+- [totalAssets()](#IERC4626-totalAssets--)
+- [convertToShares(assets)](#IERC4626-convertToShares-uint256-)
+- [convertToAssets(shares)](#IERC4626-convertToAssets-uint256-)
+- [maxDeposit(receiver)](#IERC4626-maxDeposit-address-)
+- [previewDeposit(assets)](#IERC4626-previewDeposit-uint256-)
+- [deposit(assets, receiver)](#IERC4626-deposit-uint256-address-)
+- [maxMint(receiver)](#IERC4626-maxMint-address-)
+- [previewMint(shares)](#IERC4626-previewMint-uint256-)
+- [mint(shares, receiver)](#IERC4626-mint-uint256-address-)
+- [maxWithdraw(owner)](#IERC4626-maxWithdraw-address-)
+- [previewWithdraw(assets)](#IERC4626-previewWithdraw-uint256-)
+- [withdraw(assets, receiver, owner)](#IERC4626-withdraw-uint256-address-address-)
+- [maxRedeem(owner)](#IERC4626-maxRedeem-address-)
+- [previewRedeem(shares)](#IERC4626-previewRedeem-uint256-)
+- [redeem(shares, receiver, owner)](#IERC4626-redeem-uint256-address-address-)
+
+#### IERC20Metadata
+- [name()](#IERC20Metadata-name--)
+- [symbol()](#IERC20Metadata-symbol--)
+- [decimals()](#IERC20Metadata-decimals--)
+
+#### IERC20
+- [totalSupply()](#IERC20-totalSupply--)
+- [balanceOf(account)](#IERC20-balanceOf-address-)
+- [transfer(to, amount)](#IERC20-transfer-address-uint256-)
+- [allowance(owner, spender)](#IERC20-allowance-address-address-)
+- [approve(spender, amount)](#IERC20-approve-address-uint256-)
+- [transferFrom(from, to, amount)](#IERC20-transferFrom-address-address-uint256-)
+
+### Events
+- [Deposit(sender, owner, assets, shares)](#IERC4626-Deposit-address-address-uint256-uint256-)
+- [Withdraw(sender, receiver, owner, assets, shares)](#IERC4626-Withdraw-address-address-address-uint256-uint256-)
+
+#### IERC20Metadata
+
+#### IERC20
+- [Transfer(from, to, value)](#IERC20-Transfer-address-address-uint256-)
+- [Approval(owner, spender, value)](#IERC20-Approval-address-address-uint256-)
+
+<a id="IERC4626-asset--"></a>
+
+### `asset() → address assetTokenAddress`
+*external*
+
+Returns the address of the underlying token used for the Vault for accounting, depositing, and withdrawing.
+
+- MUST be an ERC-20 token contract.
+- MUST NOT revert.
+
+<a id="IERC4626-totalAssets--"></a>
+
+### `totalAssets() → uint256 totalManagedAssets`
+*external*
+
+Returns the total amount of the underlying asset that is “managed” by Vault.
+
+- SHOULD include any compounding that occurs from yield.
+- MUST be inclusive of any fees that are charged against assets in the Vault.
+- MUST NOT revert.
+
+<a id="IERC4626-convertToShares-uint256-"></a>
+
+### `convertToShares(uint256 assets) → uint256 shares`
+*external*
+
+Returns the amount of shares that the Vault would exchange for the amount of assets provided, in an ideal
+scenario where all the conditions are met.
+
+- MUST NOT be inclusive of any fees that are charged against assets in the Vault.
+- MUST NOT show any variations depending on the caller.
+- MUST NOT reflect slippage or other on-chain conditions, when performing the actual exchange.
+- MUST NOT revert.
+
+NOTE: This calculation MAY NOT reflect the “per-user” price-per-share, and instead should reflect the
+“average-user’s” price-per-share, meaning what the average user should expect to see when exchanging to and
+from.
+
+<a id="IERC4626-convertToAssets-uint256-"></a>
+
+### `convertToAssets(uint256 shares) → uint256 assets`
+*external*
+
+Returns the amount of assets that the Vault would exchange for the amount of shares provided, in an ideal
+scenario where all the conditions are met.
+
+- MUST NOT be inclusive of any fees that are charged against assets in the Vault.
+- MUST NOT show any variations depending on the caller.
+- MUST NOT reflect slippage or other on-chain conditions, when performing the actual exchange.
+- MUST NOT revert.
+
+NOTE: This calculation MAY NOT reflect the “per-user” price-per-share, and instead should reflect the
+“average-user’s” price-per-share, meaning what the average user should expect to see when exchanging to and
+from.
+
+<a id="IERC4626-maxDeposit-address-"></a>
+
+### `maxDeposit(address receiver) → uint256 maxAssets`
+*external*
+
+Returns the maximum amount of the underlying asset that can be deposited into the Vault for the receiver,
+through a deposit call.
+
+- MUST return a limited value if receiver is subject to some deposit limit.
+- MUST return 2 ** 256 - 1 if there is no limit on the maximum amount of assets that may be deposited.
+- MUST NOT revert.
+
+<a id="IERC4626-previewDeposit-uint256-"></a>
+
+### `previewDeposit(uint256 assets) → uint256 shares`
+*external*
+
+Allows an on-chain or off-chain user to simulate the effects of their deposit at the current block, given
+current on-chain conditions.
+
+- MUST return as close to and no more than the exact amount of Vault shares that would be minted in a deposit
+  call in the same transaction. I.e. deposit should return the same or more shares as previewDeposit if called
+  in the same transaction.
+- MUST NOT account for deposit limits like those returned from maxDeposit and should always act as though the
+  deposit would be accepted, regardless if the user has enough tokens approved, etc.
+- MUST be inclusive of deposit fees. Integrators should be aware of the existence of deposit fees.
+- MUST NOT revert.
+
+NOTE: any unfavorable discrepancy between convertToShares and previewDeposit SHOULD be considered slippage in
+share price or some other type of condition, meaning the depositor will lose assets by depositing.
+
+<a id="IERC4626-deposit-uint256-address-"></a>
+
+### `deposit(uint256 assets, address receiver) → uint256 shares`
+*external*
+
+Mints shares Vault shares to receiver by depositing exactly amount of underlying tokens.
+
+- MUST emit the Deposit event.
+- MAY support an additional flow in which the underlying tokens are owned by the Vault contract before the
+  deposit execution, and are accounted for during deposit.
+- MUST revert if all of assets cannot be deposited (due to deposit limit being reached, slippage, the user not
+  approving enough underlying tokens to the Vault contract, etc).
+
+NOTE: most implementations will require pre-approval of the Vault with the Vault’s underlying asset token.
+
+<a id="IERC4626-maxMint-address-"></a>
+
+### `maxMint(address receiver) → uint256 maxShares`
+*external*
+
+Returns the maximum amount of the Vault shares that can be minted for the receiver, through a mint call.
+- MUST return a limited value if receiver is subject to some mint limit.
+- MUST return 2 ** 256 - 1 if there is no limit on the maximum amount of shares that may be minted.
+- MUST NOT revert.
+
+<a id="IERC4626-previewMint-uint256-"></a>
+
+### `previewMint(uint256 shares) → uint256 assets`
+*external*
+
+Allows an on-chain or off-chain user to simulate the effects of their mint at the current block, given
+current on-chain conditions.
+
+- MUST return as close to and no fewer than the exact amount of assets that would be deposited in a mint call
+  in the same transaction. I.e. mint should return the same or fewer assets as previewMint if called in the
+  same transaction.
+- MUST NOT account for mint limits like those returned from maxMint and should always act as though the mint
+  would be accepted, regardless if the user has enough tokens approved, etc.
+- MUST be inclusive of deposit fees. Integrators should be aware of the existence of deposit fees.
+- MUST NOT revert.
+
+NOTE: any unfavorable discrepancy between convertToAssets and previewMint SHOULD be considered slippage in
+share price or some other type of condition, meaning the depositor will lose assets by minting.
+
+<a id="IERC4626-mint-uint256-address-"></a>
+
+### `mint(uint256 shares, address receiver) → uint256 assets`
+*external*
+
+Mints exactly shares Vault shares to receiver by depositing amount of underlying tokens.
+
+- MUST emit the Deposit event.
+- MAY support an additional flow in which the underlying tokens are owned by the Vault contract before the mint
+  execution, and are accounted for during mint.
+- MUST revert if all of shares cannot be minted (due to deposit limit being reached, slippage, the user not
+  approving enough underlying tokens to the Vault contract, etc).
+
+NOTE: most implementations will require pre-approval of the Vault with the Vault’s underlying asset token.
+
+<a id="IERC4626-maxWithdraw-address-"></a>
+
+### `maxWithdraw(address owner) → uint256 maxAssets`
+*external*
+
+Returns the maximum amount of the underlying asset that can be withdrawn from the owner balance in the
+Vault, through a withdraw call.
+
+- MUST return a limited value if owner is subject to some withdrawal limit or timelock.
+- MUST NOT revert.
+
+<a id="IERC4626-previewWithdraw-uint256-"></a>
+
+### `previewWithdraw(uint256 assets) → uint256 shares`
+*external*
+
+Allows an on-chain or off-chain user to simulate the effects of their withdrawal at the current block,
+given current on-chain conditions.
+
+- MUST return as close to and no fewer than the exact amount of Vault shares that would be burned in a withdraw
+  call in the same transaction. I.e. withdraw should return the same or fewer shares as previewWithdraw if
+  called
+  in the same transaction.
+- MUST NOT account for withdrawal limits like those returned from maxWithdraw and should always act as though
+  the withdrawal would be accepted, regardless if the user has enough shares, etc.
+- MUST be inclusive of withdrawal fees. Integrators should be aware of the existence of withdrawal fees.
+- MUST NOT revert.
+
+NOTE: any unfavorable discrepancy between convertToShares and previewWithdraw SHOULD be considered slippage in
+share price or some other type of condition, meaning the depositor will lose assets by depositing.
+
+<a id="IERC4626-withdraw-uint256-address-address-"></a>
+
+### `withdraw(uint256 assets, address receiver, address owner) → uint256 shares`
+*external*
+
+Burns shares from owner and sends exactly assets of underlying tokens to receiver.
+
+- MUST emit the Withdraw event.
+- MAY support an additional flow in which the underlying tokens are owned by the Vault contract before the
+  withdraw execution, and are accounted for during withdraw.
+- MUST revert if all of assets cannot be withdrawn (due to withdrawal limit being reached, slippage, the owner
+  not having enough shares, etc).
+
+Note that some implementations will require pre-requesting to the Vault before a withdrawal may be performed.
+Those methods should be performed separately.
+
+<a id="IERC4626-maxRedeem-address-"></a>
+
+### `maxRedeem(address owner) → uint256 maxShares`
+*external*
+
+Returns the maximum amount of Vault shares that can be redeemed from the owner balance in the Vault,
+through a redeem call.
+
+- MUST return a limited value if owner is subject to some withdrawal limit or timelock.
+- MUST return balanceOf(owner) if owner is not subject to any withdrawal limit or timelock.
+- MUST NOT revert.
+
+<a id="IERC4626-previewRedeem-uint256-"></a>
+
+### `previewRedeem(uint256 shares) → uint256 assets`
+*external*
+
+Allows an on-chain or off-chain user to simulate the effects of their redeemption at the current block,
+given current on-chain conditions.
+
+- MUST return as close to and no more than the exact amount of assets that would be withdrawn in a redeem call
+  in the same transaction. I.e. redeem should return the same or more assets as previewRedeem if called in the
+  same transaction.
+- MUST NOT account for redemption limits like those returned from maxRedeem and should always act as though the
+  redemption would be accepted, regardless if the user has enough shares, etc.
+- MUST be inclusive of withdrawal fees. Integrators should be aware of the existence of withdrawal fees.
+- MUST NOT revert.
+
+NOTE: any unfavorable discrepancy between convertToAssets and previewRedeem SHOULD be considered slippage in
+share price or some other type of condition, meaning the depositor will lose assets by redeeming.
+
+<a id="IERC4626-redeem-uint256-address-address-"></a>
+
+### `redeem(uint256 shares, address receiver, address owner) → uint256 assets`
+*external*
+
+Burns exactly shares from owner and sends assets of underlying tokens to receiver.
+
+- MUST emit the Withdraw event.
+- MAY support an additional flow in which the underlying tokens are owned by the Vault contract before the
+  redeem execution, and are accounted for during redeem.
+- MUST revert if all of shares cannot be redeemed (due to withdrawal limit being reached, slippage, the owner
+  not having enough shares, etc).
+
+NOTE: some implementations will require pre-requesting to the Vault before a withdrawal may be performed.
+Those methods should be performed separately.
+
+<a id="IERC4626-Deposit-address-address-uint256-uint256-"></a>
+
+### `Deposit(address indexed sender, address indexed owner, uint256 assets, uint256 shares)`
+*event*
+
+<a id="IERC4626-Withdraw-address-address-address-uint256-uint256-"></a>
+
+### `Withdraw(address indexed sender, address indexed receiver, address indexed owner, uint256 assets, uint256 shares)`
+*event*
+
+<a id="IERC4906"></a>
+
+## `IERC4906` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC4906.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC4906.sol";
+```
+
+### Functions
+
+#### IERC721
+- [balanceOf(owner)](#IERC721-balanceOf-address-)
+- [ownerOf(tokenId)](#IERC721-ownerOf-uint256-)
+- [safeTransferFrom(from, to, tokenId, data)](#IERC721-safeTransferFrom-address-address-uint256-bytes-)
+- [safeTransferFrom(from, to, tokenId)](#IERC721-safeTransferFrom-address-address-uint256-)
+- [transferFrom(from, to, tokenId)](#IERC721-transferFrom-address-address-uint256-)
+- [approve(to, tokenId)](#IERC721-approve-address-uint256-)
+- [setApprovalForAll(operator, approved)](#IERC721-setApprovalForAll-address-bool-)
+- [getApproved(tokenId)](#IERC721-getApproved-uint256-)
+- [isApprovedForAll(owner, operator)](#IERC721-isApprovedForAll-address-address-)
+
+#### IERC165
+- [supportsInterface(interfaceId)](#IERC165-supportsInterface-bytes4-)
+
+### Events
+- [MetadataUpdate(_tokenId)](#IERC4906-MetadataUpdate-uint256-)
+- [BatchMetadataUpdate(_fromTokenId, _toTokenId)](#IERC4906-BatchMetadataUpdate-uint256-uint256-)
+
+#### IERC721
+- [Transfer(from, to, tokenId)](#IERC721-Transfer-address-address-uint256-)
+- [Approval(owner, approved, tokenId)](#IERC721-Approval-address-address-uint256-)
+- [ApprovalForAll(owner, operator, approved)](#IERC721-ApprovalForAll-address-address-bool-)
+
+#### IERC165
+
+<a id="IERC4906-MetadataUpdate-uint256-"></a>
+
+### `MetadataUpdate(uint256 _tokenId)`
+*event*
+
+This event emits when the metadata of a token is changed.
+So that the third-party platforms such as NFT market could
+timely update the images and related attributes of the NFT.
+
+<a id="IERC4906-BatchMetadataUpdate-uint256-uint256-"></a>
+
+### `BatchMetadataUpdate(uint256 _fromTokenId, uint256 _toTokenId)`
+*event*
+
+This event emits when the metadata of a range of tokens is changed.
+So that the third-party platforms such as NFT market could
+timely update the images and related attributes of the NFTs.
+
+<a id="IERC5267"></a>
+
+## `IERC5267` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC5267.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC5267.sol";
+```
+
+### Functions
+- [eip712Domain()](#IERC5267-eip712Domain--)
+
+### Events
+- [EIP712DomainChanged()](#IERC5267-EIP712DomainChanged--)
+
+<a id="IERC5267-eip712Domain--"></a>
+
+### `eip712Domain() → bytes1 fields, string name, string version, uint256 chainId, address verifyingContract, bytes32 salt, uint256[] extensions`
+*external*
+
+returns the fields and values that describe the domain separator used by this contract for EIP-712
+signature.
+
+<a id="IERC5267-EIP712DomainChanged--"></a>
+
+### `EIP712DomainChanged()`
+*event*
+
+MAY be emitted to signal that the domain could have changed.
+
+<a id="IERC5313"></a>
+
+## `IERC5313` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC5313.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC5313.sol";
+```
+
+Interface for the Light Contract Ownership Standard.
+
+A standardized minimal interface required to identify an account that controls a contract
+
+_Available since v4.9._
+
+### Functions
+- [owner()](#IERC5313-owner--)
+
+<a id="IERC5313-owner--"></a>
+
+### `owner() → address`
+*external*
+
+Gets the address of the owner.
+
+<a id="IERC5805"></a>
+
+## `IERC5805` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC5805.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC5805.sol";
+```
+
+### Functions
+
+#### IVotes
+- [getVotes(account)](#IVotes-getVotes-address-)
+- [getPastVotes(account, timepoint)](#IVotes-getPastVotes-address-uint256-)
+- [getPastTotalSupply(timepoint)](#IVotes-getPastTotalSupply-uint256-)
+- [delegates(account)](#IVotes-delegates-address-)
+- [delegate(delegatee)](#IVotes-delegate-address-)
+- [delegateBySig(delegatee, nonce, expiry, v, r, s)](#IVotes-delegateBySig-address-uint256-uint256-uint8-bytes32-bytes32-)
+
+#### IERC6372
+- [clock()](#IERC6372-clock--)
+- [CLOCK_MODE()](#IERC6372-CLOCK_MODE--)
+
+### Events
+
+#### IVotes
+- [DelegateChanged(delegator, fromDelegate, toDelegate)](#IVotes-DelegateChanged-address-address-address-)
+- [DelegateVotesChanged(delegate, previousBalance, newBalance)](#IVotes-DelegateVotesChanged-address-uint256-uint256-)
+
+#### IERC6372
+
+<a id="IERC6372"></a>
+
+## `IERC6372` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/IERC6372.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/IERC6372.sol";
+```
+
+### Functions
+- [clock()](#IERC6372-clock--)
+- [CLOCK_MODE()](#IERC6372-CLOCK_MODE--)
+
+<a id="IERC6372-clock--"></a>
+
+### `clock() → uint48`
+*external*
+
+Clock used for flagging checkpoints. Can be overridden to implement timestamp based checkpoints (and voting).
+
+<a id="IERC6372-CLOCK_MODE--"></a>
+
+### `CLOCK_MODE() → string`
+*external*
+
+Description of the clock
+
+<a id="IERC1822Proxiable"></a>
+
+## `IERC1822Proxiable` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/interfaces/draft-IERC1822.sol)
+
+```solidity
+import "@openzeppelin/contracts/interfaces/draft-IERC1822.sol";
+```
+
+ERC1822: Universal Upgradeable Proxy Standard (UUPS) documents a method for upgradeability through a simplified
+proxy whose upgrades are fully controlled by the current implementation.
+
+### Functions
+- [proxiableUUID()](#IERC1822Proxiable-proxiableUUID--)
+
+<a id="IERC1822Proxiable-proxiableUUID--"></a>
+
+### `proxiableUUID() → bytes32`
+*external*
+
+Returns the storage slot that the proxiable contract assumes is being used to store the implementation
+address.
+
+IMPORTANT: A proxy pointing at a proxiable contract should not be considered proxiable itself, because this risks
+bricking a proxy that upgrades to it, by delegating to itself until out of gas. Thus it is critical that this
+function revert if invoked through a proxy.
+

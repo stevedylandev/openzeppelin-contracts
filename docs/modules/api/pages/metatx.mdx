@@ -1,0 +1,121 @@
+---
+title: "Metatx"
+description: "Smart contract metatx utilities and implementations"
+---
+
+= Meta Transactions
+
+[.readme-notice]
+NOTE: This document is better viewed at https://docs.openzeppelin.com/contracts/api/metatx
+
+== Core
+
+[`ERC2771Context`](#ERC2771Context)
+
+== Utils
+
+[`MinimalForwarder`](#MinimalForwarder)
+
+<a id="ERC2771Context"></a>
+
+## `ERC2771Context` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/metatx/ERC2771Context.sol)
+
+```solidity
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
+```
+
+Context variant with ERC2771 support.
+
+WARNING: The usage of `delegatecall` in this contract is dangerous and may result in context corruption.
+Any forwarded request to this contract triggering a `delegatecall` to itself will result in an invalid [`ERC2771Context._msgSender`](#ERC2771Context-_msgSender--)
+recovery.
+
+### Functions
+- [constructor(trustedForwarder)](#ERC2771Context-constructor-address-)
+- [isTrustedForwarder(forwarder)](#ERC2771Context-isTrustedForwarder-address-)
+- [_msgSender()](#ERC2771Context-_msgSender--)
+- [_msgData()](#ERC2771Context-_msgData--)
+- [_contextSuffixLength()](#ERC2771Context-_contextSuffixLength--)
+
+<a id="ERC2771Context-constructor-address-"></a>
+
+### `constructor(address trustedForwarder)`
+*internal*
+
+<a id="ERC2771Context-isTrustedForwarder-address-"></a>
+
+### `isTrustedForwarder(address forwarder) → bool`
+*public*
+
+<a id="ERC2771Context-_msgSender--"></a>
+
+### `_msgSender() → address`
+*internal*
+
+<a id="ERC2771Context-_msgData--"></a>
+
+### `_msgData() → bytes`
+*internal*
+
+<a id="ERC2771Context-_contextSuffixLength--"></a>
+
+### `_contextSuffixLength() → uint256`
+*internal*
+
+ERC-2771 specifies the context as being a single address (20 bytes).
+
+<a id="MinimalForwarder"></a>
+
+## `MinimalForwarder` [📁](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.6/contracts/metatx/MinimalForwarder.sol)
+
+```solidity
+import "@openzeppelin/contracts/metatx/MinimalForwarder.sol";
+```
+
+Simple minimal forwarder to be used together with an ERC2771 compatible contract. See [`ERC2771Context`](#ERC2771Context).
+
+MinimalForwarder is mainly meant for testing, as it is missing features to be a good production-ready forwarder. This
+contract does not intend to have all the properties that are needed for a sound forwarding system. A fully
+functioning forwarding system with good properties requires more complexity. We suggest you look at other projects
+such as the GSN which do have the goal of building a system like that.
+
+### Functions
+- [constructor()](#MinimalForwarder-constructor--)
+- [getNonce(from)](#MinimalForwarder-getNonce-address-)
+- [verify(req, signature)](#MinimalForwarder-verify-struct-MinimalForwarder-ForwardRequest-bytes-)
+- [execute(req, signature)](#MinimalForwarder-execute-struct-MinimalForwarder-ForwardRequest-bytes-)
+
+#### EIP712
+- [_domainSeparatorV4()](#EIP712-_domainSeparatorV4--)
+- [_hashTypedDataV4(structHash)](#EIP712-_hashTypedDataV4-bytes32-)
+- [eip712Domain()](#EIP712-eip712Domain--)
+
+#### IERC5267
+
+### Events
+
+#### EIP712
+
+#### IERC5267
+- [EIP712DomainChanged()](#IERC5267-EIP712DomainChanged--)
+
+<a id="MinimalForwarder-constructor--"></a>
+
+### `constructor()`
+*public*
+
+<a id="MinimalForwarder-getNonce-address-"></a>
+
+### `getNonce(address from) → uint256`
+*public*
+
+<a id="MinimalForwarder-verify-struct-MinimalForwarder-ForwardRequest-bytes-"></a>
+
+### `verify(struct MinimalForwarder.ForwardRequest req, bytes signature) → bool`
+*public*
+
+<a id="MinimalForwarder-execute-struct-MinimalForwarder-ForwardRequest-bytes-"></a>
+
+### `execute(struct MinimalForwarder.ForwardRequest req, bytes signature) → bool, bytes`
+*public*
+
