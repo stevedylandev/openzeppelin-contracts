@@ -1,35 +1,37 @@
-const { version } = require('../../package.json');
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
-const os = require('os');
+const { version } = require("../../package.json");
+const fs = require("fs");
+const path = require("path");
+const { execSync } = require("child_process");
+const os = require("os");
 
-module.exports['oz-version'] = () => version;
+const API_DOCS_PATH = "contracts/3.x/api";
 
-module.exports['readme-path'] = opts => {
+module.exports["oz-version"] = () => version;
+
+module.exports["readme-path"] = (opts) => {
   const pageId = opts.data.root.id;
-  const basePath = pageId.replace(/\.(adoc|mdx)$/, '');
-  return 'contracts/' + basePath + '/README.adoc';
+  const basePath = pageId.replace(/\.(adoc|mdx)$/, "");
+  return "contracts/" + basePath + "/README.adoc";
 };
 
-module.exports.readme = readmePath => {
+module.exports.readme = (readmePath) => {
   try {
     if (fs.existsSync(readmePath)) {
-      const readmeContent = fs.readFileSync(readmePath, 'utf8');
+      const readmeContent = fs.readFileSync(readmePath, "utf8");
       return processAdocContent(readmeContent);
     }
   } catch (error) {
     console.warn(`Warning: Could not process README at ${readmePath}:`, error.message);
   }
-  return '';
+  return "";
 };
 
-module.exports.names = params => params?.map(p => p.name).join(', ');
+module.exports.names = (params) => params?.map((p) => p.name).join(", ");
 
 // Simple function counter for unique IDs
 const functionNameCounts = {};
 
-module.exports['simple-id'] = function (name) {
+module.exports["simple-id"] = function (name) {
   if (!functionNameCounts[name]) {
     functionNameCounts[name] = 1;
     return name;
@@ -39,17 +41,17 @@ module.exports['simple-id'] = function (name) {
   }
 };
 
-module.exports['reset-function-counts'] = function () {
-  Object.keys(functionNameCounts).forEach(key => delete functionNameCounts[key]);
-  return '';
+module.exports["reset-function-counts"] = function () {
+  Object.keys(functionNameCounts).forEach((key) => delete functionNameCounts[key]);
+  return "";
 };
 
 module.exports.eq = (a, b) => a === b;
-module.exports['starts-with'] = (str, prefix) => str && str.startsWith(prefix);
+module.exports["starts-with"] = (str, prefix) => str && str.startsWith(prefix);
 
 // Process natspec content with {REF} and link replacement
-module.exports['process-natspec'] = function (natspec, opts) {
-  if (!natspec) return '';
+module.exports["process-natspec"] = function (natspec, opts) {
+  if (!natspec) return "";
 
   const currentPage = opts.data.root.__item_context?.page || opts.data.root.id;
   const links = getAllLinks(opts.data.site.items, currentPage);
@@ -57,15 +59,15 @@ module.exports['process-natspec'] = function (natspec, opts) {
   return processReferences(natspec, links);
 };
 
-module.exports['typed-params'] = params => {
-  return params?.map(p => `${p.type}${p.indexed ? ' indexed' : ''}${p.name ? ' ' + p.name : ''}`).join(', ');
+module.exports["typed-params"] = (params) => {
+  return params?.map((p) => `${p.type}${p.indexed ? " indexed" : ""}${p.name ? " " + p.name : ""}`).join(", ");
 };
 
-const slug = (module.exports.slug = str => {
+const slug = (module.exports.slug = (str) => {
   if (str === undefined) {
-    throw new Error('Missing argument');
+    throw new Error("Missing argument");
   }
-  return str.replace(/\W/g, '-');
+  return str.replace(/\W/g, "-");
 });
 
 // Link generation and caching
@@ -86,10 +88,10 @@ function getAllLinks(items, currentPage) {
   }
 
   const res = {};
-  const currentPagePath = currentPage ? currentPage.replace(/\.mdx$/, '') : '';
+  const currentPagePath = currentPage ? currentPage.replace(/\.mdx$/, "") : "";
 
   for (const item of items) {
-    const pagePath = item.__item_context.page.replace(/\.mdx$/, '');
+    const pagePath = item.__item_context.page.replace(/\.mdx$/, "");
     const linkPath = generateLinkPath(pagePath, currentPagePath, item.anchor);
 
     // Generate xref keys for legacy compatibility
@@ -97,10 +99,10 @@ function getAllLinks(items, currentPage) {
 
     // Generate original case xref keys
     if (item.__item_context && item.__item_context.contract) {
-      let originalAnchor = item.__item_context.contract.name + '-' + item.name;
-      if ('parameters' in item) {
-        const signature = item.parameters.parameters.map(v => v.typeName.typeDescriptions.typeString).join(',');
-        originalAnchor += slug('(' + signature + ')');
+      let originalAnchor = item.__item_context.contract.name + "-" + item.name;
+      if ("parameters" in item) {
+        const signature = item.parameters.parameters.map((v) => v.typeName.typeDescriptions.typeString).join(",");
+        originalAnchor += slug("(" + signature + ")");
       }
       res[`xref-${originalAnchor}`] = linkPath;
     }
@@ -123,14 +125,14 @@ function getAllLinks(items, currentPage) {
 function generateLinkPath(pagePath, currentPagePath, anchor) {
   if (
     currentPagePath &&
-    (pagePath === currentPagePath || pagePath.split('/').pop() === currentPagePath.split('/').pop())
+    (pagePath === currentPagePath || pagePath.split("/").pop() === currentPagePath.split("/").pop())
   ) {
     return `#${anchor}`;
   }
 
   if (currentPagePath) {
-    const currentParts = currentPagePath.split('/');
-    const targetParts = pagePath.split('/');
+    const currentParts = currentPagePath.split("/");
+    const targetParts = pagePath.split("/");
 
     // Find common base
     let i = 0;
@@ -144,9 +146,9 @@ function generateLinkPath(pagePath, currentPagePath, anchor) {
     if (upLevels === 0 && downPath.length === 1) {
       return `${downPath[0]}#${anchor}`;
     } else if (upLevels === 0) {
-      return `${downPath.join('/')}#${anchor}`;
+      return `${downPath.join("/")}#${anchor}`;
     } else {
-      const relativePath = '../'.repeat(upLevels) + downPath.join('/');
+      const relativePath = "../".repeat(upLevels) + downPath.join("/");
       return `${relativePath}#${anchor}`;
     }
   }
@@ -170,34 +172,80 @@ function processReferences(content, links) {
     return replacement ? `[${linkText}](${replacement})` : match;
   });
 
+  // Handle cross-references in format {Contract-function-parameters}
+  result = result.replace(
+    /\{([A-Z][a-zA-Z0-9]*)-([a-zA-Z_][a-zA-Z0-9]*)-([^-}]+)\}/g,
+    (match, contract, func, params) => {
+      // Convert dash-separated params to comma-separated, then slugify to match anchor format
+      const commaParams = params
+        .replace(/-bytes\[\]/g, ",bytes[]")
+        .replace(/-uint[0-9]*/g, ",uint$1")
+        .replace(/-address/g, ",address")
+        .replace(/-bool/g, ",bool")
+        .replace(/-string/g, ",string");
+      const slugifiedParams = commaParams.replace(/\W/g, "-");
+      const xrefKey = `xref-${contract}-${func}-${slugifiedParams}`;
+      const replacement = links[xrefKey];
+      if (replacement) {
+        return `[\`${contract}.${func}\`](${replacement})`;
+      }
+      return match;
+    },
+  );
+
+  // Handle cross-references in format {Contract-function-parameters}
+  result = result.replace(
+    /\{([A-Z][a-zA-Z0-9]*)-([a-zA-Z_][a-zA-Z0-9]*)-([^}]+)\}/g,
+    (match, contract, func, params) => {
+      // Convert dash-separated params to comma-separated, then slugify with parentheses to match anchor format
+      const commaParams = params
+        .replace(/-bytes\[\]/g, ",bytes[]")
+        .replace(/-uint[0-9]*/g, ",uint$1")
+        .replace(/-address/g, ",address")
+        .replace(/-bool/g, ",bool")
+        .replace(/-string/g, ",string");
+      const slugifiedParams = `(${commaParams})`.replace(/\W/g, "-");
+      const xrefKey = `xref-${contract}-${func}${slugifiedParams}`;
+      const replacement = links[xrefKey];
+      if (replacement) {
+        return `[\`${contract}.${func}\`](${replacement})`;
+      }
+      return match;
+    },
+  );
+
   // Replace {link-key} placeholders with markdown links
   result = result.replace(/\{([-._a-z0-9]+)\}/gi, (match, key) => {
     const replacement = findBestMatch(key, links);
-    return replacement || match;
+    return replacement || `\`${key}\``;
   });
+
+  // Convert AsciiDoc admonitions to Callout components
+  result = result.replace(/^\[NOTE\]\s*\n====\s*\n([\s\S]*?)\n====$/gm, "<Callout>\n$1\n</Callout>");
+  result = result.replace(/^(WARNING|IMPORTANT):\s*(.+)$/gm, '<Callout type="warn">\n$2\n</Callout>');
 
   return cleanupContent(result);
 }
 
 function resolveReference(refId, links) {
   // Try direct match first
-  const directKey = `xref-${refId.replace(/\./g, '-')}`;
+  const directKey = `xref-${refId.replace(/\./g, "-")}`;
   if (links[directKey]) {
-    const parts = refId.split('.');
+    const parts = refId.split(".");
     const displayText = parts.length > 1 ? `${parts[0]}.${parts[1]}` : refId;
     return `[\`${displayText}\`](${links[directKey]})`;
   }
 
   // Try fuzzy matching
-  const matchingKeys = Object.keys(links).filter(key => {
-    const normalizedKey = key.replace('xref-', '').toLowerCase();
-    const normalizedRef = refId.replace(/\./g, '-').toLowerCase();
+  const matchingKeys = Object.keys(links).filter((key) => {
+    const normalizedKey = key.replace("xref-", "").toLowerCase();
+    const normalizedRef = refId.replace(/\./g, "-").toLowerCase();
     return normalizedKey.includes(normalizedRef) || normalizedRef.includes(normalizedKey);
   });
 
   if (matchingKeys.length > 0) {
     const bestMatch = matchingKeys[0];
-    const parts = refId.split('.');
+    const parts = refId.split(".");
     const displayText = parts.length > 1 ? `${parts[0]}.${parts[1]}` : refId;
     return `[\`${displayText}\`](${links[bestMatch]})`;
   }
@@ -210,26 +258,26 @@ function findBestMatch(key, links) {
 
   if (!replacement) {
     // Strategy 1: Look for keys that end with this key
-    let matchingKeys = Object.keys(links).filter(linkKey => {
-      const parts = linkKey.split('-');
+    let matchingKeys = Object.keys(links).filter((linkKey) => {
+      const parts = linkKey.split("-");
       return parts.length >= 2 && parts[parts.length - 1] === key;
     });
 
     // Strategy 2: Try with different separators
     if (matchingKeys.length === 0) {
-      const keyWithDashes = key.replace(/\./g, '-');
-      matchingKeys = Object.keys(links).filter(linkKey => linkKey.includes(keyWithDashes));
+      const keyWithDashes = key.replace(/\./g, "-");
+      matchingKeys = Object.keys(links).filter((linkKey) => linkKey.includes(keyWithDashes));
     }
 
     // Strategy 3: Try partial matches
     if (matchingKeys.length === 0) {
-      matchingKeys = Object.keys(links).filter(linkKey => {
-        return linkKey === key || linkKey.endsWith('-' + key) || linkKey.includes(key);
+      matchingKeys = Object.keys(links).filter((linkKey) => {
+        return linkKey === key || linkKey.endsWith("-" + key) || linkKey.includes(key);
       });
     }
 
     if (matchingKeys.length > 0) {
-      const nonXrefMatches = matchingKeys.filter(k => !k.startsWith('xref-'));
+      const nonXrefMatches = matchingKeys.filter((k) => !k.startsWith("xref-"));
       const bestMatch = nonXrefMatches.length > 0 ? nonXrefMatches[0] : matchingKeys[0];
       replacement = links[bestMatch];
     }
@@ -240,16 +288,16 @@ function findBestMatch(key, links) {
 
 function cleanupContent(content) {
   return content
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#x27;/g, "'")
-    .replace(/&#x2F;/g, '/')
-    .replace(/&#x60;/g, '`')
-    .replace(/&#x3D;/g, '=')
-    .replace(/&amp;/g, '&')
-    .replace(/\{(\[`[^`]+`\]\([^)]+\))\}/g, '$1')
-    .replace(/https?:\/\/[^\s[]+\[[^\]]+\]/g, match => {
+    .replace(/&#x2F;/g, "/")
+    .replace(/&#x60;/g, "`")
+    .replace(/&#x3D;/g, "=")
+    .replace(/&amp;/g, "&")
+    .replace(/\{(\[`[^`]+`\]\([^)]+\))\}/g, "$1")
+    .replace(/https?:\/\/[^\s[]+\[[^\]]+\]/g, (match) => {
       const urlMatch = match.match(/^(https?:\/\/[^[]+)\[([^\]]+)\]$/);
       return urlMatch ? `[${urlMatch[2]}](${urlMatch[1]})` : match;
     });
@@ -257,9 +305,9 @@ function cleanupContent(content) {
 
 function processAdocContent(content) {
   try {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'adoc-process-'));
-    const tempAdocFile = path.join(tempDir, 'temp.adoc');
-    const tempMdFile = path.join(tempDir, 'temp.md');
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "adoc-process-"));
+    const tempAdocFile = path.join(tempDir, "temp.adoc");
+    const tempMdFile = path.join(tempDir, "temp.md");
 
     // Preprocess AsciiDoc content
     let processedContent = content
@@ -271,30 +319,32 @@ function processAdocContent(content) {
         /\[source,solidity\]\s*\n----\s*\ninclude::api:example\$([^[\]]+)\[\]\s*\n----/g,
         "<include cwd lang='solidity'>./examples/$1</include>",
       )
-      .replace(/^(TIP|NOTE):\s*(.+)$/gm, '<Callout>\n$2\n</Callout>')
+      .replace(/^(TIP|NOTE):\s*(.+)$/gm, "<Callout>\n$2\n</Callout>")
       .replace(/^(IMPORTANT|WARNING):\s*(.+)$/gm, "<Callout type='warn'>\n$2\n</Callout>");
 
-    fs.writeFileSync(tempAdocFile, processedContent, 'utf8');
+    fs.writeFileSync(tempAdocFile, processedContent, "utf8");
 
-    execSync(`bunx downdoc "${tempAdocFile}"`, {
-      stdio: 'pipe',
+    execSync(`npx downdoc "${tempAdocFile}"`, {
+      stdio: "pipe",
       cwd: process.cwd(),
     });
 
-    let mdContent = fs.readFileSync(tempMdFile, 'utf8');
+    let mdContent = fs.readFileSync(tempMdFile, "utf8");
 
     // Clean up and transform markdown
     mdContent = cleanupContent(mdContent)
-      .replace(/\(api:([^)]+)\.adoc([^)]*)\)/g, '(contracts/v5.x/api/$1.mdx$2)')
-      .replace(/!\[([^\]]*)\]\(([^/)][^)]*\.(png|jpg|jpeg|gif|svg|webp))\)/g, '![$1](/$2)')
-      .replace(/<dl><dt><strong>💡 TIP<\/strong><\/dt><dd>\s*([\s\S]*?)\s*<\/dd><\/dl>/g, '<Callout>\n$1\n</Callout>')
-      .replace(/<dl><dt><strong>📌 NOTE<\/strong><\/dt><dd>\s*([\s\S]*?)\s*<\/dd><\/dl>/g, '<Callout>\n$1\n</Callout>')
+      .replace(/\(api:([^)]+)\.adoc([^)]*)\)/g, `(${API_DOCS_PATH}/$1.mdx$2)`)
+      .replace(/!\[([^\]]*)\]\(([^/)][^)]*\.(png|jpg|jpeg|gif|svg|webp))\)/g, "![$1](/$2)")
+      .replace(/<dl><dt><strong>💡 TIP<\/strong><\/dt><dd>\s*([\s\S]*?)\s*<\/dd><\/dl>/g, "<Callout>\n$1\n</Callout>")
+      .replace(/<dl><dt><strong>📌 NOTE<\/strong><\/dt><dd>\s*([\s\S]*?)\s*<\/dd><\/dl>/g, "<Callout>\n$1\n</Callout>")
       .replace(
         /<dl><dt><strong>(?:💡|📌|ℹ️)?\s*(TIP|NOTE|INFO)<\/strong><\/dt><dd>\s*([\s\S]*?)\s*<\/dd><\/dl>/g,
-        '<Callout>\n$2\n</Callout>',
+        "<Callout>\n$2\n</Callout>",
       )
-      .replace(/^#+\s+.+$/m, '')
-      .replace(/^\n+/, '');
+      .replace(/^#+\s+.+$/m, "")
+      .replace(/^\n+/, "")
+      .replace(/(?<!<Callout>\n)^((?!<Callout>).+?)\n<\/Callout>/m, "<Callout>\n$1\n</Callout>")
+      .replace(/<Callout>\nThis document is better viewed at [^\n]*\n<\/Callout>\n?/g, "");
 
     // Cleanup temp files
     try {
@@ -302,36 +352,36 @@ function processAdocContent(content) {
       fs.unlinkSync(tempMdFile);
       fs.rmdirSync(tempDir);
     } catch (cleanupError) {
-      console.warn('Warning: Could not clean up temp files:', cleanupError.message);
+      console.warn("Warning: Could not clean up temp files:", cleanupError.message);
     }
 
     return mdContent;
   } catch (error) {
-    console.warn('Warning: Failed to process AsciiDoc content:', error.message);
+    console.warn("Warning: Failed to process AsciiDoc content:", error.message);
     return content;
   }
 }
 
-module.exports.title = opts => {
+module.exports.title = (opts) => {
   const pageId = opts.data.root.id;
-  const basePath = pageId.replace(/\.(adoc|mdx)$/, '');
-  const parts = basePath.split('/');
-  const dirName = parts[parts.length - 1] || 'Contracts';
+  const basePath = pageId.replace(/\.(adoc|mdx)$/, "");
+  const parts = basePath.split("/");
+  const dirName = parts[parts.length - 1] || "Contracts";
   return dirName
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };
 
-module.exports.description = opts => {
+module.exports.description = (opts) => {
   const pageId = opts.data.root.id;
-  const basePath = pageId.replace(/\.(adoc|mdx)$/, '');
-  const parts = basePath.split('/');
-  const dirName = parts[parts.length - 1] || 'contracts';
-  return `Smart contract ${dirName.replace('-', ' ')} utilities and implementations`;
+  const basePath = pageId.replace(/\.(adoc|mdx)$/, "");
+  const parts = basePath.split("/");
+  const dirName = parts[parts.length - 1] || "contracts";
+  return `Smart contract ${dirName.replace("-", " ")} utilities and implementations`;
 };
 
-module.exports['with-prelude'] = opts => {
+module.exports["with-prelude"] = (opts) => {
   const currentPage = opts.data.root.id;
   const links = getAllLinks(opts.data.site.items, currentPage);
   const contents = opts.fn();
