@@ -357,7 +357,7 @@ function processCallouts(content) {
   // Handle AsciiDoc block admonitions (with ====)
   result = result.replace(/^\[(NOTE|TIP)\]\s*\n====\s*\n([\s\S]*?)\n====$/gm, '<Callout>\n$2\n</Callout>');
   result = result.replace(
-    /^\[(IMPORTANT|WARNING)\]\s*\n====\s*\n([\s\S]*?)\n====$/gm,
+    /^\[(IMPORTANT|WARNING|CAUTION)\]\s*\n====\s*\n([\s\S]*?)\n====$/gm,
     '<Callout type="warn">\n$2\n</Callout>',
   );
 
