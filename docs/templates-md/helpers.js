@@ -398,6 +398,10 @@ function processCallouts(content) {
 
   // Remove any resulting callouts that only contain the "better viewed at" message
   result = result.replace(/<Callout[^>]*>\s*This document is better viewed at [^\n]*\s*<\/Callout>\s*/g, '');
+  result = result.replace(/<Callout[^>]*>\s*<\/Callout>/g, '');
+
+  // Remove callouts that only contain whitespace/newlines
+  result = result.replace(/<Callout[^>]*>\s*\n\s*<\/Callout>/g, '');
 
   return result;
 }
