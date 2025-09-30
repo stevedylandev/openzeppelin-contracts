@@ -387,6 +387,10 @@ function processCallouts(content) {
     '<Callout type="warn">\n$2\n</Callout>',
   );
 
+  // Fix prematurely closed callouts - move </Callout> to after all paragraph text
+  // This handles cases where </Callout> was inserted after the first line but there's more text
+  result = result.replace(/(<Callout[^>]*>\n[^<]+)\n<\/Callout>\n([^<\n]+(?:\n[^<\n]+)*)/g, '$1\n$2\n</Callout>');
+
   // Clean up "better viewed at" notices (keep these at the end)
   result = result.replace(/^\*\*📌 NOTE\*\*\\\s*\nThis document is better viewed at [^\n]*\n*/gm, '');
   result = result.replace(/^\*\*⚠️ WARNING\*\*\\\s*\nThis document is better viewed at [^\n]*\n*/gm, '');
