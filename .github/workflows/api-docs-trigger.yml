@@ -50,7 +50,7 @@ jobs:
           GH_TOKEN: ${{ secrets.DOCS_REPO_TOKEN }}
         run: |
           gh workflow run ${{ env.WORKFLOW_NAME }}.yml \
-            --repo OpenZeppelin/docs \
+            --repo stevedylandev/ozdocs \
             --field tag_name="${{ steps.trigger.outputs.ref_name }}" \
             --field trigger_type="${{ steps.trigger.outputs.trigger_type }}"
 
